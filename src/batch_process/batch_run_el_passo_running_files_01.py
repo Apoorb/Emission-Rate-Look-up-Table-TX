@@ -8,24 +8,17 @@ import mariadb  # https://mariadb.com/resources/blog/how-to-connect-python-progr
 import sys
 import time
 import glob
-from src.utils import get_project_root
+from src.utils import PATH_TO_PROJECT_ROOT
+from src.utils import MAP_COUNTY_ABB_FULL_NM
+from src.utils import PATH_TO_MARIA_DB_DATA
+from src.utils import PATH_TO_ERLT_FILES
+from src.utils import TEMPLATE_DB_NM
 import re
 from sqlalchemy import create_engine
-import mysql.connector
+import mysql.connector # Needed for create_engine to work.
 import pandas as pd
 
-# GLOBAL PATHS
 DEBUG = False
-MAP_COUNTY_ABB_FULL_NM = {"elp": "El Paso"}
-PATH_TO_MARIA_DB_DATA = "C:/ProgramData/MariaDB/MariaDB 10.4/data"
-PATH_TO_PROJECT_ROOT = get_project_root()
-PATH_INTERIM = os.path.join(PATH_TO_PROJECT_ROOT, "data", "interim")
-PATH_TO_ERLT_FILES = os.path.join(PATH_INTERIM, "ERLT Files")
-if not os.path.exists(PATH_TO_ERLT_FILES):
-    os.mkdir(PATH_TO_ERLT_FILES)
-TEMPLATE_DB_NM = "mvs14b_erlt_elp_48141_2020_1_cer_out"  # Database used for developing the 1st set of SQL queries. It's
-# name would be replaced by other database name as we iterate over the different databases.
-
 
 def get_db_nm_county_year_dict(county_abb) -> dict:
     """
@@ -111,7 +104,7 @@ if __name__ == "__main__":
         cur = conn.cursor()
         # Read SQL Commands.
         sql_command_file = os.path.join(
-            PATH_TO_PROJECT_ROOT, "src/data/Python_Input_SQL_Commands_ELP_2020_1.sql"
+            PATH_TO_PROJECT_ROOT, "src/batch_process/Python_Input_SQL_Commands_ELP_2020_1.sql"
         )
         sql_command_file_rd_obj = open(sql_command_file, "r").read()
         sql_commands = sql_command_file_rd_obj.split(";")

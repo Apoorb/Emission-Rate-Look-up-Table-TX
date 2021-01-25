@@ -14,3 +14,7 @@ mariadb
 sqlalchemy
 mysql-connector
 black
+openpyxl
+plotly
+dash
+pytest
