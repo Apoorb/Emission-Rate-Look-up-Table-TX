@@ -4,12 +4,13 @@ Tests to QAQC data processing from batch_run_el_passo_running_files_01.py.
 import pytest
 import pandas as pd
 import numpy as np
-import src.batch_process.batch_run_el_passo_running_files_01 as batch_running_erlt
+import src.running.batch_run_el_passo_running_files_01 as batch_running_erlt
+import src.utils
 
 
 @pytest.fixture(scope="session")
 def get_erlt_2014b_data():
-    conn = batch_running_erlt.connect_to_server_db(database_nm="MVS2014b_ERLT_OUT")
+    conn = src.utils.connect_to_server_db(database_nm="MVS2014b_ERLT_OUT")
     cur = conn.cursor()
     erlt_elp_df_2014b = pd.read_sql("SELECT * FROM El_Paso_ERLT", conn)
     return erlt_elp_df_2014b
