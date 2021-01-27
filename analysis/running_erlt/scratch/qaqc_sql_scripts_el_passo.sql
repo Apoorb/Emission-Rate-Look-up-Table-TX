@@ -8,8 +8,10 @@ SET SQL_SAFE_UPDATES = 0;
 -- Set the analysis District for filtering District in hourmix, TxDOT_Dist in TxDOT_Dist,
 -- assigning Area is emisrate table.
 SET @analysis_district = "El Paso";
-
-
+-- Set districts with TxLED program.
+SET @txled_prog_disticts = "El Paso,District X"; -- Remove El Paso from here---Check with Madhu---It likely doesn't have TxLED.
+SELECT FIND_IN_SET(@analysis_district, @txled_prog_disticts);
+SELECT FIND_IN_SET("El Pafso", @txled_prog_disticts);
 flush tables;
 drop table  if exists mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate;
 create table mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate (SELECT yearid,monthid,hourid,
@@ -23,12 +25,10 @@ group by yearid,monthid,hourid,roadtypeid,pollutantid,sourcetypeid,fueltypeid,av
 -- Get the analysis year from the emisrate table.
 SET @analysis_year = (SELECT yearid FROM mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate LIMIT 1);
 
--- Get the year for vmtmix_fy20.todmix table. It is in multiple of 5s (2020, 2025, 2030...)
-SET @analysis_year = 2021;
  
 DELIMITER $$
-DROP PROCEDURE IF EXISTS pr1 $$
-CREATE PROCEDURE pr1()
+DROP PROCEDURE IF EXISTS find_todmix_yr $$
+CREATE PROCEDURE find_todmix_yr()
 BEGIN
 	IF @analysis_year <= 2022 THEN 
 		SET @analysis_year_todmix = 2020;
@@ -47,7 +47,7 @@ BEGIN
 	END IF;
 END $$
 DELIMITER ;
-CALL pr1;
+CALL find_todmix_yr;
 SELECT @analysis_year, @analysis_year_todmix;
 
 
@@ -69,6 +69,32 @@ create table mvs14b_erlt_elp_48141_2022_7_cer_out.VMTmix
 SELECT * FROM vmtmix_fy20.todmix 
 where TxDOT_Dist = @analysis_district and Daytype = "Weekday" and YearID =  @analysis_year_todmix;
 
+-- Script to get the TxLED Table.
+DELIMITER $$
+USE mvs14b_erlt_elp_48141_2022_7_cer_out $$
+DROP PROCEDURE IF EXISTS import_txled_proc $$
+CREATE PROCEDURE import_txled_proc()
+BEGIN
+   IF FIND_IN_SET(@analysis_district, @txled_prog_disticts)
+   THEN
+		flush TABLES;
+		drop table  if exists mvs14b_erlt_elp_48141_2022_7_cer_out.TxLed_Long_Copy;
+		create table mvs14b_erlt_elp_48141_2022_7_cer_out.TxLed_Long_Copy 
+		SELECT * FROM txled_db.txled_long
+		WHERE yearid = @analysis_year;
+				
+		ALTER TABLE mvs14b_erlt_elp_48141_2022_7_cer_out.TxLed_Long_Copy
+		DROP yearid,
+		MODIFY pollutantid SMALLINT,
+		MODIFY sourcetypeid SMALLINT,
+		MODIFY fueltypeid SMALLINT,
+		MODIFY txled_fac FLOAT(6);
+   END IF;
+END $$
+DELIMITER ;
+CALL import_txled_proc();
+
+
 -- Script to add necessary fields to the rate table and populate it with appropriate data
 
 FLUSH TABLES;
@@ -79,7 +105,8 @@ ADD COLUMN stypemix float,
 ADD COLUMN emisFact float,
 ADD COLUMN Funclass char(25),
 ADD COLUMN Period char(2),
-ADD COLUMN Area char(25);
+ADD COLUMN Area char(25),
+ADD COLUMN txledfac FLOAT(6);
 
 FLUSH TABLES;
 Update mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate
@@ -158,14 +185,46 @@ JOIN mvs14b_erlt_elp_48141_2022_7_cer_out.HourMix c ON
 a.hourid = c.TOD
 SET a.HourMix = c.factor;
 
+-- Script to load TxLED to the base rate table
+DELIMITER $$
+USE mvs14b_erlt_elp_48141_2022_7_cer_out $$
+DROP PROCEDURE IF EXISTS txled_join_proc $$
+CREATE PROCEDURE txled_join_proc()
+BEGIN
+   IF FIND_IN_SET(@analysis_district, @txled_prog_disticts)
+   THEN
+		CREATE INDEX IF NOT EXISTS efidx3
+		ON mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate 
+		(pollutantid, sourcetypeid, fueltypeid);
+		
+		CREATE INDEX txledidx1
+		ON mvs14b_erlt_elp_48141_2022_7_cer_out.TxLed_Long_Copy 
+		(pollutantid, sourcetypeid, fueltypeid);
+		
+		flush tables;
+		UPDATE mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate a
+		LEFT JOIN mvs14b_erlt_elp_48141_2022_7_cer_out.TxLed_Long_Copy d ON
+		a.pollutantid = d.pollutantid AND
+		a.sourcetypeid = d.sourcetypeid AND
+		a.fueltypeid = d.fueltypeid
+		SET a.txledfac = d.txled_fac;
+   END IF;
+END $$
+DELIMITER ;
+CALL txled_join_proc();
+
+UPDATE mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate
+SET txledfac = 1.0 WHERE txledfac IS NULL;
+
+
 -- Script to create composite emission rate
 
 flush tables;
 UPDATE mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate
-SET emisFact = ERate*stypemix*HourMix;
+SET emisFact = ERate*stypemix*HourMix*txledfac;
 
-drop table  if exists MVS2014b_ERLT.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC;
-create table MVS2014b_ERLT.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC 
+drop table  if exists MVS2014b_ERLT_QAQC.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC;
+create table MVS2014b_ERLT_QAQC.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC 
 SELECT Area,yearid,monthid,funclass,avgspeed,
 SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
 SUM(IF(pollutantid = 3, emisfact, 0)) AS NOX,
