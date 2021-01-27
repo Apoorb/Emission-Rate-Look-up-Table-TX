@@ -9,7 +9,7 @@ import mariadb
 import os
 import datetime
 import logging
-from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM, create_qaqc_output_conflicted_schema
+from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM
 
 
 def create_running_table_in_db(delete_if_exists=False):
@@ -76,6 +76,7 @@ class RunningSqlCmds:
         "sat": {"area_district": "San Antonio", "txled_active": True}
     }
     MAP_RD_TYPE = {2: "Rural-Freeway", 3: "Rural-Arterial", 4: "Urban-Freeway", 5: "Urban-Arterial"}
+    # TODO: Might change the time assignment for El Paso
     MAP_PERIOD_HOURID = {
         "AM":(7, 8, 9),
         "PM":(17, 18, 19),
@@ -448,7 +449,7 @@ class RunningSqlCmds:
         time of day and if the TxLED program is active in a county (or majority of county of a district."""
         self.cur.execute("""UPDATE emisrate SET emisFact = ERate*stypemix*HourMix*txledfac;""")
 
-    def agg_by_rdtype_funcls_avgspd(self, okay_with_using_data_from_last_run=False):
+    def agg_by_rdtype_funcls_avgspd(self, conflicted_copy_suffix=""):
         """
         Aggregate (sum) emission rate by Area, yearid, monthid, funclass, avgspeed. Insert the aggregated table
         to mvs2014b_erlt_out.running_erlt_intermediate if no duplicate exists. Else, ask the user if they want a
@@ -489,22 +490,32 @@ class RunningSqlCmds:
         except mariadb.IntegrityError as integerr:
             print(integerr)
             print("Re-create the mvs2014b_erlt_out.running_erlt_intermediate table if you want to overwrite it.")
-            if okay_with_using_data_from_last_run:
-                pass
-            else:
+            timestamp_now = datetime.datetime.now().strftime('%d_%m_%Y')
+            save_conflicted_copy = input(
+                f"Cannot write over the data in mvs2014b_erlt_out.running_erlt_intermediate. Do you want to save"
+                f"the data in mvs2014b_erlt_conflicted as "
+                f"mvs2014b_erlt_conflicted.{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}_{timestamp_now}"
+                f"(y/n)"
+            )
+            if save_conflicted_copy.lower() == "y":
                 print(f"Saving running emission rate for {self.district_abb}, {self.analysis_year}, "
                       f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review.")
-                timestamp_now = datetime.datetime.now().strftime('log_batch_sql_%H_%M_%d_%m_%Y.log')
                 cmd_create_agg = cmd_insert_agg.replace("""
                 INSERT INTO mvs2014b_erlt_out.running_erlt_intermediate( Area, yearid, monthid, funclass, avgspeed, 
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, ACTE, ACROL, ETYB, DPM, POM)
                 """,
                 f"""
-                CREATE TABLE mvs2014b_erlt_conflicted.{self.district_abb}_{self.analysis_year}_f{self.anaylsis_month}_{timestamp_now}
+                CREATE TABLE mvs2014b_erlt_conflicted.{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}_{timestamp_now}
                 """
                )
+                self.cur.execute(f"DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}_{timestamp_now}")
                 self.cur.execute(cmd_create_agg)
-                raise
+            else:
+                use_previous_run_results = input("Do you want to use the results from past run and continue code execution (y/n)")
+                if use_previous_run_results:
+                    pass
+                else:
+                    raise
 
 
 if __name__ == "__main__":
@@ -514,8 +525,6 @@ if __name__ == "__main__":
     path_log_file = os.path.join(path_to_log_dir, "log_batch_sql.log")
     logging.basicConfig(filename=path_log_file, filemode='w', level=logging.INFO)
     # ---
-    create_qaqc_output_conflicted_schema()
-    create_running_table_in_db(delete_if_exists=True)
     RunningSqlCmds.DEBUG = True
     TESTING_txled_par = True
     if TESTING_txled_par:
@@ -535,7 +544,7 @@ if __name__ == "__main__":
     elp_2022_7_obj.create_indices_before_joins()
     elp_2022_7_obj.join_emisrate_vmt_tod_txled()
     elp_2022_7_obj.compute_factored_emisrate()
-    elp_2022_7_obj.agg_by_rdtype_funcls_avgspd()
+    elp_2022_7_obj.agg_by_rdtype_funcls_avgspd(conflicted_copy_suffix="txled")
     if RunningSqlCmds.DEBUG:
         logging.info("---Query execution time:  %s seconds ---" % (time.time() - query_start_time))
     logging.info(f"# End processing {db_nm}")
