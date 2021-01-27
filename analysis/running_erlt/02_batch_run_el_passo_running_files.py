@@ -5,81 +5,56 @@ Created by: Apoorba Bibeka
 Date Created: 01/22/2021
 """
 import os
-from dotenv import load_dotenv, find_dotenv
+import logging
 import time
-from src.utils import MAP_COUNTY_ABB_FULL_NM, connect_to_server_db, get_db_nm_county_year_dict
-from src.utils import PATH_TO_PROJECT_ROOT
-from src.utils import PATH_TO_ERLT_FILES
-from src.utils import TEMPLATE_DB_NM
-import re
-from sqlalchemy import create_engine
-import pandas as pd
+import datetime
+from ttierlt.utils import PATH_INTERIM, get_db_nm_list
+from ttierlt.utils import create_qaqc_output_conflicted_schema
+from ttierlt.running.batch_sql import create_running_table_in_db
+from ttierlt.running.batch_sql import RunningSqlCmds as erlt_running
 
-DEBUG = False
+DEBUG = True
 
 if __name__ == "__main__":
-    # Get Cursor
-    db_nms_county_year_month_dict = get_db_nm_county_year_dict(county_abb="elp")
+    path_to_log_dir = os.path.join(PATH_INTERIM, "Log Files")
+    if not os.path.exists(path_to_log_dir):
+        os.mkdir(path_to_log_dir)
+    logfilenm = datetime.datetime.now().strftime('log_02_batch_run_el_passo_running_files_%H_%M_%d_%m_%Y.log')
+    path_log_file = os.path.join(path_to_log_dir, logfilenm)
+    logging.basicConfig(filename=path_log_file, filemode='w', level=logging.INFO)
+    db_nms_list = get_db_nm_list(county_abb="elp")
     list_erlt_dfs = []
-    STOP_ITER = 1
+    STOP_ITER = 2
     ITER_CNTER = 0
-    for db_nm, db_county_year_month in db_nms_county_year_month_dict.items():
+    for db_nm in db_nms_list:
         start_time = time.time()
-        print(f"Processing {db_nm}")
         if DEBUG & ITER_CNTER == STOP_ITER:
             break
         ITER_CNTER = ITER_CNTER + 1
-        conn = connect_to_server_db(db_nm)
-        cur = conn.cursor()
-        # Read SQL Commands.
-        sql_command_file = os.path.join(
-            PATH_TO_PROJECT_ROOT, "src/batch_process/Python_Input_SQL_Commands_ELP_2020_1.sql"
+        create_qaqc_output_conflicted_schema()
+        # Delete the existing output table. It cannot have duplicated data; will raise error if you try to add
+        # duplicated data.
+        create_running_table_in_db(delete_if_exists=True)
+        # Run the SQL Commands on the database.
+        ########################################################
+        logging.info(f"# Start processing {db_nm}")
+        print("# Start processing {db_nm}")
+        print("-------------------------------------------------------------------")
+        erlt_running_obj = erlt_running(
+            db_nm_=db_nm,
+            county_abb_="elp"
         )
-        sql_command_file_rd_obj = open(sql_command_file, "r").read()
-        sql_commands = sql_command_file_rd_obj.split(";")
-        # Had issue with last line having empty values like " ", "", or "\n". Using the following regex expression to screen
-        # the last line.
-        invalid_text_commands = re.compile(r"\s*")
-        # Iterate over all the SQL commands.
-        for command in sql_commands:
-            if re.fullmatch(invalid_text_commands, command):
-                if DEBUG:
-                    ("Bad Command: ", command)
-                continue
-            query_start_time = time.time()
-            command_current_db = command.replace(TEMPLATE_DB_NM, db_nm)
-            district_nm = MAP_COUNTY_ABB_FULL_NM[db_county_year_month["county"]]
-            command_current_db_district_nm = command_current_db.replace(
-                "Placeholder_District_Name", district_nm
-            )
-            if DEBUG:
-                (command_current_db_district_nm)
-            cur.execute(command_current_db_district_nm)
-            if DEBUG:
-                print(
-                    "---Query execution time:  %s seconds ---"
-                    % (time.time() - query_start_time)
-                )
-        print(
-            f"---{db_nm} query execution time:  %s seconds ---"
-            % (time.time() - start_time)
-        )
-        temp_erlt_df = pd.read_sql("SELECT * FROM MVS2014b_ERLT.temp_erlt_table", conn)
-        out_file_name = "erlt_" + "_".join(db_county_year_month.values()) + ".csv"
-        out_file_full_path = os.path.join(PATH_TO_ERLT_FILES, out_file_name)
-        temp_erlt_df.to_csv(out_file_full_path, index=False)
-
-        list_erlt_dfs.append(temp_erlt_df)
-        conn.close()
-
-    final_erlt_df = pd.concat(list_erlt_dfs)
-    # find .env automagically by walking up directories until it's found
-    dotenv_path = find_dotenv()
-    # load up the entries as environment variables
-    load_dotenv(dotenv_path)
-    host = "127.0.0.1"
-    out_database = "MVS2014b_ERLT_OUT"
-    engine = create_engine(
-        f"mysql+mysqlconnector://root:{os.environ.get('MARIA_DB_PASSWORD')}@{host}/{out_database}"
-    )
-    final_erlt_df.to_sql("El_Paso_ERLT", con=engine, if_exists="replace", index=False)
+        query_start_time = time.time()
+        erlt_running_obj.aggregate_emisrate_rateperdist()
+        hourmix_elp = erlt_running_obj.get_hour_mix_for_db_district()
+        vmt_mix_elp_2022 = erlt_running_obj.get_vmt_mix_for_db_district_weekday_closest_vmt_yr()
+        txled_elp_dict = erlt_running_obj.get_txled_for_db_district_year()
+        erlt_running_obj.create_indices_before_joins()
+        erlt_running_obj.join_emisrate_vmt_tod_txled()
+        erlt_running_obj.compute_factored_emisrate()
+        erlt_running_obj.agg_by_rdtype_funcls_avgspd()
+        logging.info("---Query execution time:  %s seconds ---" % (time.time() - query_start_time))
+        logging.info(f"# End processing {db_nm}")
+        print("---Query execution time:  %s seconds ---" % (time.time() - query_start_time))
+        print(f"# End processing {db_nm}")
+        print("-------------------------------------------------------------------")
