@@ -60,6 +60,7 @@ class RunningSqlCmds:
     Function to execute SQL commands for running emission process.
     """
     DEBUG = True
+    # FixMe: Check spelling with the TODMIX or HOURMIX file.
     # FixMe: Check with Madhu about which districts have TxLED.
     # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf
     # Make El Paso True for QAQC purposes.
@@ -117,6 +118,11 @@ class RunningSqlCmds:
         self.vmtmix = pd.DataFrame()
         self.txled = pd.DataFrame()
         self.created_all_indices = False
+
+    def __del__(self):
+        # TODO: Delete after initial testing.
+        # print("Connected closed")
+        self.conn.close()
 
     def get_tdmix_year(self):
         if self.analysis_year > 2017:
@@ -442,7 +448,7 @@ class RunningSqlCmds:
         time of day and if the TxLED program is active in a county (or majority of county of a district."""
         self.cur.execute("""UPDATE emisrate SET emisFact = ERate*stypemix*HourMix*txledfac;""")
 
-    def agg_by_rdtype_funcls_avgspd(self):
+    def agg_by_rdtype_funcls_avgspd(self, okay_with_using_data_from_last_run=False):
         """
         Aggregate (sum) emission rate by Area, yearid, monthid, funclass, avgspeed. Insert the aggregated table
         to mvs2014b_erlt_out.running_erlt_intermediate if no duplicate exists. Else, ask the user if they want a
@@ -483,15 +489,11 @@ class RunningSqlCmds:
         except mariadb.IntegrityError as integerr:
             print(integerr)
             print("Re-create the mvs2014b_erlt_out.running_erlt_intermediate table if you want to overwrite it.")
-            ignore_error = input(
-                f"Are you okay with the existing (previous) data for {self.district_abb}, {self.analysis_year}, "
-                f"{self.anaylsis_month} (y/n)"
-            )
-            if ignore_error == "y":
+            if okay_with_using_data_from_last_run:
                 pass
             else:
                 print(f"Saving running emission rate for {self.district_abb}, {self.analysis_year}, "
-                      f"{self.anaylsis_month} in mvs2014b_erlt_qaqc for qaqc")
+                      f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review.")
                 timestamp_now = datetime.datetime.now().strftime('log_batch_sql_%H_%M_%d_%m_%Y.log')
                 cmd_create_agg = cmd_insert_agg.replace("""
                 INSERT INTO mvs2014b_erlt_out.running_erlt_intermediate( Area, yearid, monthid, funclass, avgspeed, 
