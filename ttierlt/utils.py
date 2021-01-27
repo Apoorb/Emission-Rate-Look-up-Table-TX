@@ -75,4 +75,5 @@ def create_qaqc_output_conflicted_schema():
     cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_out;")
     cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_qaqc;")
     cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_conflicted;")
+    conn.close()
 
