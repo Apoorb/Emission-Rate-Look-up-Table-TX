@@ -2,6 +2,7 @@
 Tests to QAQC data processing from 02_batch_run_el_passo_running_files.py.
 """
 import pytest
+import re
 import pandas as pd
 import numpy as np
 from ttierlt.utils import connect_to_server_db
@@ -21,7 +22,8 @@ def get_qaqc_tables_created_from_sql():
     cur = conn.cursor()
     cur.execute(" SHOW TABLES")
     tables_in_qaqc = cur.fetchall()
-    table_names = [table[0] for table in tables_in_qaqc if "qaqc_from_orignal" in table[0]]
+    search_pat = re.compile(".*qaqc_from_orignal$")
+    table_names = [table[0] for table in tables_in_qaqc if re.search(search_pat, table[0])]
     erlt_df_subsets_sql = pd.DataFrame()
     list_qaqc_dfs = []
     for table_nm in table_names:
@@ -43,7 +45,8 @@ def get_qaqc_tables_created_from_sql_non_fixture():
     cur = conn.cursor()
     cur.execute(" SHOW TABLES")
     tables_in_qaqc = cur.fetchall()
-    table_names = [table[0] for table in tables_in_qaqc if "qaqc_from_orignal" in table[0]]
+    search_pat = re.compile(".*qaqc_from_orignal$")
+    table_names = [table[0] for table in tables_in_qaqc if re.search(search_pat, table[0])]
     erlt_df_subsets_sql = pd.DataFrame()
     list_qaqc_dfs = []
     for table_nm in table_names:
