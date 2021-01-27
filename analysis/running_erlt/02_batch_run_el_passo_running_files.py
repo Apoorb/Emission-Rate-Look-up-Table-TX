@@ -24,11 +24,6 @@ if __name__ == "__main__":
     logging.basicConfig(filename=path_log_file, filemode='w', level=logging.INFO)
     # # Get list of processed databases.
     # TODO: Inventory and skip processed files.
-    # Create output schemas and running output table.
-    create_qaqc_output_conflicted_schema()
-    # Delete the existing output table. It cannot have duplicated data; will raise error if you try to add
-    # duplicated data.
-    create_running_table_in_db(delete_if_exists=True)
 
     db_nms_list = get_db_nm_list(county_abb="elp")
     STOP_ITER = 10
