@@ -27,6 +27,7 @@ SET @analysis_year = (SELECT yearid FROM mvs14b_erlt_elp_48141_2022_7_cer_out.em
 
  
 DELIMITER $$
+USE mvs14b_erlt_elp_48141_2022_7_cer_out $$
 DROP PROCEDURE IF EXISTS find_todmix_yr $$
 CREATE PROCEDURE find_todmix_yr()
 BEGIN
@@ -223,8 +224,8 @@ flush tables;
 UPDATE mvs14b_erlt_elp_48141_2022_7_cer_out.emisrate
 SET emisFact = ERate*stypemix*HourMix*txledfac;
 
-drop table  if exists MVS2014b_ERLT_QAQC.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC;
-create table MVS2014b_ERLT_QAQC.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC 
+drop table  if exists MVS2014b_ERLT_QAQC.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC_from_orignal_txled;
+create table MVS2014b_ERLT_QAQC.mvs14b_erlt_elp_48141_2022_7_cer_out_QAQC_from_orignal_txled 
 SELECT Area,yearid,monthid,funclass,avgspeed,
 SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
 SUM(IF(pollutantid = 3, emisfact, 0)) AS NOX,
