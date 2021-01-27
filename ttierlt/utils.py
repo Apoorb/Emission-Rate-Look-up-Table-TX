@@ -74,3 +74,13 @@ def get_db_nm_list(county_abb="*") -> list:
         os.path.basename(dir_path) for dir_path in db_dirs_county_year_month
     ]
     return db_nms_county_year_month
+
+
+def create_qaqc_output_conflicted_schema():
+    conn = connect_to_server_db(database_nm=None)
+    cur = conn.cursor()
+    # Create Output database if not exist
+    cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_out;")
+    cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_qaqc;")
+    cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_conflicted;")
+
