@@ -196,6 +196,8 @@ class RunningSqlCmds:
                      "---" % (time.time() - start_time))
         if debug:
             self.head_emisrate_df = pd.read_sql(f"SELECT * FROM emisrate LIMIT 5", self.conn)
+            print("---aggregate_emisrate_rateperdist and _update_emisrate_rateperdist execution time:  %s seconds "
+                     "---" % (time.time() - start_time))
             return self.head_emisrate_df
         return pd.DataFrame()
 
@@ -324,7 +326,7 @@ class RunningSqlCmds:
         Returns
         -------
         dict
-            Returns dict with {"txled_df": pd.DataFrame(), "txled_yr": txled_yr_value} when county/district does not
+            Returns dict with {"txled_df": pd.DataFrame(), "txled_yr": -999} when county/district does not
             have TxLed program OR debug = False;
             return entire txled data and the year in the sql table if debug=True.
         """
@@ -356,7 +358,7 @@ class RunningSqlCmds:
                     self.conn)
                 self.test_txled_df_is_read()
                 return {"txled_df": self.txled, "txled_yr": txled_yearid_from_sql_table}
-        return {"txled_df": pd.DataFrame(), "txled_yr": txled_yearid_from_sql_table}
+        return {"txled_df": pd.DataFrame(), "txled_yr": -999}
 
     def test_txled_cor_year_pulled(self, txled_yr):
         """Check if the year matches for TxLED and the MOVES database under processing."""
@@ -432,9 +434,10 @@ class RunningSqlCmds:
             print("Run create_indices_before_joins to speed-up joins. Will not run this function unless "
                   "create_indices_before_joins ran without errors.")
             raise ValueError("self.created_all_indices is still False.")
+        print("---join_emisrate_vmt_tod_txled execution time:  %s seconds---" % (time.time() - start_time))
         logging.info("---join_emisrate_vmt_tod_txled execution time:  %s seconds---" % (time.time() - start_time))
 
-    def comute_factored_emisrate(self):
+    def compute_factored_emisrate(self):
         """Weight the emission rate by vmt for different vehicle types, fuel times, proportion of vehicles in different
         time of day and if the TxLED program is active in a county (or majority of county of a district."""
         self.cur.execute("""UPDATE emisrate SET emisFact = ERate*stypemix*HourMix*txledfac;""")
@@ -474,6 +477,7 @@ class RunningSqlCmds:
                 GROUP BY Area,yearid,monthid,funclass,avgspeed
             """
             self.cur.execute(cmd_insert_agg)
+            print("---agg_by_rdtype_funcls_avgspd execution time:  %s seconds---" % (time.time() - start_time))
             logging.info("---agg_by_rdtype_funcls_avgspd execution time:  %s seconds---" % (time.time() - start_time))
 
         except mariadb.IntegrityError as integerr:
@@ -488,8 +492,7 @@ class RunningSqlCmds:
             else:
                 print(f"Saving running emission rate for {self.district_abb}, {self.analysis_year}, "
                       f"{self.anaylsis_month} in mvs2014b_erlt_qaqc for qaqc")
-                timestamp_now = str(
-                    datetime.datetime.now()).split(".")[0].replace("-", "_").replace(":", "_").replace(" ", "_")
+                timestamp_now = datetime.datetime.now().strftime('log_batch_sql_%H_%M_%d_%m_%Y.log')
                 cmd_create_agg = cmd_insert_agg.replace("""
                 INSERT INTO mvs2014b_erlt_out.running_erlt_intermediate( Area, yearid, monthid, funclass, avgspeed, 
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, ACTE, ACROL, ETYB, DPM, POM)
@@ -503,7 +506,10 @@ class RunningSqlCmds:
 
 
 if __name__ == "__main__":
-    path_log_file = os.path.join(PATH_INTERIM, "log_batch_sql.log")
+    path_to_log_dir = os.path.join(PATH_INTERIM, "Log Files")
+    if not os.path.exists(path_to_log_dir):
+        os.mkdir(path_to_log_dir)
+    path_log_file = os.path.join(path_to_log_dir, "log_batch_sql.log")
     logging.basicConfig(filename=path_log_file, filemode='w', level=logging.INFO)
     # ---
     create_qaqc_output_conflicted_schema()
@@ -526,7 +532,7 @@ if __name__ == "__main__":
     txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
     elp_2022_7_obj.create_indices_before_joins()
     elp_2022_7_obj.join_emisrate_vmt_tod_txled()
-    elp_2022_7_obj.comute_factored_emisrate()
+    elp_2022_7_obj.compute_factored_emisrate()
     elp_2022_7_obj.agg_by_rdtype_funcls_avgspd()
     if RunningSqlCmds.DEBUG:
         logging.info("---Query execution time:  %s seconds ---" % (time.time() - query_start_time))
