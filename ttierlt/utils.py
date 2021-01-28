@@ -4,6 +4,8 @@ from pathlib import Path
 import os
 import mariadb
 from dotenv import find_dotenv, load_dotenv
+from sqlalchemy import create_engine
+import mysql.connector # Needed for create_engine to work.
 
 
 def get_project_root() -> Path:
@@ -14,6 +16,9 @@ PATH_TO_MARIA_DB_DATA = "C:/ProgramData/MariaDB/MariaDB 10.4/data"
 PATH_TO_PROJECT_ROOT = get_project_root()
 PATH_INTERIM = os.path.join(PATH_TO_PROJECT_ROOT, "data", "interim")
 PATH_RAW = os.path.join(PATH_TO_PROJECT_ROOT, "data", "raw")
+PATH_INTERIM_RUNNING = os.path.join(PATH_INTERIM, "running")
+if not os.path.exists(PATH_INTERIM_RUNNING): os.mkdir(PATH_INTERIM_RUNNING)
+
 TEMPLATE_DB_NM = "mvs14b_erlt_elp_48141_2020_1_cer_out"  # Database used for developing the 1st set of SQL queries. It's
 # name would be replaced by other database name as we iterate over the different databases.
 
@@ -77,3 +82,17 @@ def create_qaqc_output_conflicted_schema():
     cur.execute("CREATE SCHEMA IF NOT EXISTS mvs2014b_erlt_conflicted;")
     conn.close()
 
+
+def get_engine_to_output_to_db(out_database):
+    """
+    Get engine to output data to to out_database using pd.to_sql().
+    """
+    # find .env automagically by walking up directories until it's found
+    dotenv_path = find_dotenv()
+    # load up the entries as environment variables
+    load_dotenv(dotenv_path)
+    host = "127.0.0.1"
+    engine = create_engine(
+        f"mysql+mysqlconnector://root:{os.environ.get('MARIA_DB_PASSWORD')}@{host}/{out_database}"
+    )
+    return engine
