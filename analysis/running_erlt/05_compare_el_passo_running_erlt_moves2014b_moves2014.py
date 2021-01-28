@@ -5,22 +5,22 @@ Date Created: 01/24/2021
 """
 import pandas as pd
 import os
-import src.utils
-from src.utils import PATH_RAW
+import ttierlt.utils
+from ttierlt.utils import PATH_RAW
 import plotly.express as px
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
+from ttierlt.utils import connect_to_server_db
 
-import src.running.batch_run_el_passo_running_files_01 as batch_running_erlt
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-conn = src.utils.connect_to_server_db(database_nm="MVS2014b_ERLT_OUT")
+conn = connect_to_server_db(database_nm="MVS2014b_ERLT_OUT")
 cur = conn.cursor()
-erlt_elp_df_2014b = pd.read_sql("SELECT * FROM El_Paso_ERLT", conn)
+erlt_elp_df_2014b = pd.read_sql("SELECT * FROM running_erlt_intermediate_yr_interpolated_spd_interpolated", conn)
 #erlt_elp_df_2014b.to_csv(r"C:\Users\A-Bibeka\ProjectCode\TTI\ERLT_Plot\data\ERLT_elp_with_MOVES_2014b.csv")
 
 erlt_elp_df_2014b_long = (
