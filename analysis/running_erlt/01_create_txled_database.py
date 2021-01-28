@@ -1,9 +1,6 @@
 import os
-import mysql.connector # Needed for create_engine to work.
-from dotenv import load_dotenv, find_dotenv
-from sqlalchemy import create_engine
 import pandas as pd
-from ttierlt.utils import PATH_RAW, PATH_INTERIM, connect_to_server_db
+from ttierlt.utils import PATH_RAW, PATH_INTERIM_RUNNING, connect_to_server_db, get_engine_to_output_to_db
 
 # Read in a sample database to get the sourcetypeid and the fueltypeid.
 conn = connect_to_server_db(database_nm="mvs14b_erlt_elp_48141_2020_1_cer_out")
@@ -30,21 +27,14 @@ txled_long = (
     .reset_index()
     .filter(items=["yearid", "pollutantid", "sourcetypeid", "fueltypeid", "txled_fac"])
 )
-path_out_txled_long = os.path.join(PATH_INTERIM, "txled_long.csv")
+path_out_txled_long = os.path.join(PATH_INTERIM_RUNNING, "txled_long.csv")
 txled_long.to_csv(path_out_txled_long)
 conn.close()
 conn = connect_to_server_db(database_nm=None)
 cur = conn.cursor()
 cur.execute("CREATE DATABASE IF NOT EXISTS txled_db;")
-# find .env automagically by walking up directories until it's found
-dotenv_path = find_dotenv()
-# load up the entries as environment variables
-load_dotenv(dotenv_path)
-host = "127.0.0.1"
-out_database = "txled_db"
-engine = create_engine(
-    f"mysql+mysqlconnector://root:{os.environ.get('MARIA_DB_PASSWORD')}@{host}/{out_database}"
-)
+
+engine = get_engine_to_output_to_db(out_database="txled_db")
 txled_long.to_sql("txled_long", con=engine, if_exists="replace", index=False)
 
 
