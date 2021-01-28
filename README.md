@@ -30,24 +30,19 @@ Project Organization
     │                         generated with `pip freeze > requirements.txt`
     │
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
-    ├── src                <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes src a Python module
+    │
+    ├── ttierlt                <- Source code for use in this project.
+    │   ├── __init__.py    <- Makes ttierlt a Python module
     │   │
-    │   └── batck_process           <- Scripts to download or generate data
-    │       └── batch_run_el_passo_running_files_01.py
-    │  
+    │   └── running           <- Packages to process running emissions.
+    │
+    ├── analysis               <- Scripts to process the emission rate data.
+    │   │
+    │   └── running           <- Scripts to process running emissions.
     │
     └── tox.ini            <- tox file with settings for running tox; see tox.readthedocs.io
 
 
-
-root  
-  ├ sub1  
-  | ├ sub1a  
-  | └ sub1b  
-  ├ sub2  
-  └ sub3
- 
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
