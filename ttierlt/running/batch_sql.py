@@ -9,7 +9,7 @@ import mariadb
 import os
 import datetime
 import logging
-from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM
+from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_RUNNING
 
 
 def create_running_table_in_db(delete_if_exists=False):
@@ -519,7 +519,7 @@ class RunningSqlCmds:
 
 
 if __name__ == "__main__":
-    path_to_log_dir = os.path.join(PATH_INTERIM, "Log Files")
+    path_to_log_dir = os.path.join(PATH_INTERIM_RUNNING, "Log Files")
     if not os.path.exists(path_to_log_dir):
         os.mkdir(path_to_log_dir)
     path_log_file = os.path.join(path_to_log_dir, "log_batch_sql.log")
