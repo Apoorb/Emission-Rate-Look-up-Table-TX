@@ -5,16 +5,14 @@ Date Created: 01/24/2021
 """
 import pandas as pd
 import os
-import ttierlt.utils
-from ttierlt.utils import PATH_RAW
 import plotly.express as px
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State
-from ttierlt.utils import connect_to_server_db
+from ttierlt.utils import connect_to_server_db, PATH_RAW
 
-
+# FixMe: Incoporate the latest dataset for plotting. Re-label axis.
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 

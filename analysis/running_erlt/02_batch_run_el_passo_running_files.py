@@ -8,14 +8,14 @@ import os
 import logging
 import time
 import datetime
-from ttierlt.utils import PATH_INTERIM, get_db_nm_list
+from ttierlt.utils import PATH_INTERIM_RUNNING, get_db_nm_list
 from ttierlt.running.batch_sql import RunningSqlCmds as erltRunning
 
 DEBUG = False
 
 if __name__ == "__main__":
     # Set logging file details.
-    path_to_log_dir = os.path.join(PATH_INTERIM, "Log Files")
+    path_to_log_dir = os.path.join(PATH_INTERIM_RUNNING, "Log Files")
     if not os.path.exists(path_to_log_dir):
         os.mkdir(path_to_log_dir)
     logfilenm = datetime.datetime.now().strftime(

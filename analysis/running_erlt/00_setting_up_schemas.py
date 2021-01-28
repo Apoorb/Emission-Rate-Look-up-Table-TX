@@ -26,7 +26,7 @@ if delete_running_table_if_exists.lower() == "y":
         "Change the delete_if_exists_user_input parameter to True. I am intentionally not automating it."
     )
     delete_if_exists_user_input = False
-create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
+    create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
 
 # Clean-up existing intermediate tables.
 for db_nm in get_db_nm_list("elp"):
