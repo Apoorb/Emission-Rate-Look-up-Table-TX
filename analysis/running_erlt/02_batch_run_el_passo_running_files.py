@@ -8,9 +8,8 @@ import os
 import logging
 import time
 import datetime
-from ttierlt.utils import PATH_INTERIM, get_db_nm_list, create_qaqc_output_conflicted_schema
-from ttierlt.running.batch_sql import create_running_table_in_db
-from ttierlt.running.batch_sql import RunningSqlCmds as erlt_running
+from ttierlt.utils import PATH_INTERIM, get_db_nm_list
+from ttierlt.running.batch_sql import RunningSqlCmds as erltRunning
 
 DEBUG = False
 
@@ -39,7 +38,7 @@ if __name__ == "__main__":
         logging.info(f"# Start processing {db_nm}")
         print(f"# Start processing {db_nm}")
         print("-------------------------------------------------------------------")
-        erlt_running_obj = erlt_running(
+        erlt_running_obj = erltRunning(
             db_nm_=db_nm,
             county_abb_="elp"
         )
