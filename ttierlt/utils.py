@@ -5,7 +5,7 @@ import os
 import mariadb
 from dotenv import find_dotenv, load_dotenv
 from sqlalchemy import create_engine
-import mysql.connector # Needed for create_engine to work.
+import mysql.connector  # Needed for create_engine to work.
 
 
 def get_project_root() -> Path:
@@ -17,7 +17,8 @@ PATH_TO_PROJECT_ROOT = get_project_root()
 PATH_INTERIM = os.path.join(PATH_TO_PROJECT_ROOT, "data", "interim")
 PATH_RAW = os.path.join(PATH_TO_PROJECT_ROOT, "data", "raw")
 PATH_INTERIM_RUNNING = os.path.join(PATH_INTERIM, "running")
-if not os.path.exists(PATH_INTERIM_RUNNING): os.mkdir(PATH_INTERIM_RUNNING)
+if not os.path.exists(PATH_INTERIM_RUNNING):
+    os.mkdir(PATH_INTERIM_RUNNING)
 
 TEMPLATE_DB_NM = "mvs14b_erlt_elp_48141_2020_1_cer_out"  # Database used for developing the 1st set of SQL queries. It's
 # name would be replaced by other database name as we iterate over the different databases.
