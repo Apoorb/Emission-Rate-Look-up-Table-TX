@@ -19,6 +19,15 @@ PATH_RAW = os.path.join(PATH_TO_PROJECT_ROOT, "data", "raw")
 PATH_INTERIM_RUNNING = os.path.join(PATH_INTERIM, "running")
 if not os.path.exists(PATH_INTERIM_RUNNING):
     os.mkdir(PATH_INTERIM_RUNNING)
+PATH_INTERIM_STARTS = os.path.join(PATH_INTERIM, "starts")
+if not os.path.exists(PATH_INTERIM_STARTS):
+    os.mkdir(PATH_INTERIM_STARTS)
+PATH_INTERIM_IDLING = os.path.join(PATH_INTERIM, "idling")
+if not os.path.exists(PATH_INTERIM_IDLING):
+    os.mkdir(PATH_INTERIM_IDLING)
+PATH_INTERIM_EXTNIDLE = os.path.join(PATH_INTERIM, "extnidle")
+if not os.path.exists(PATH_INTERIM_EXTNIDLE):
+    os.mkdir(PATH_INTERIM_EXTNIDLE)
 
 TEMPLATE_DB_NM = "mvs14b_erlt_elp_48141_2020_1_cer_out"  # Database used for developing the 1st set of SQL queries. It's
 # name would be replaced by other database name as we iterate over the different databases.
