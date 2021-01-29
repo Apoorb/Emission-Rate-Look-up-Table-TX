@@ -289,17 +289,17 @@ class RunningSqlCmds:
             Returns empty pd.DataFrame() when debug = False; return entire hourmix if debug=True.
         """
         self.cur.execute("FLUSH TABLES;")
-        self.cur.execute(f"DROP TABLE IF EXISTS hourmix_{self.district_abb};")
+        self.cur.execute(f"DROP TABLE IF EXISTS hourmix_running_{self.district_abb};")
         self.cur.execute(
             f"""
-            CREATE TABLE hourmix_{self.district_abb}
+            CREATE TABLE hourmix_running_{self.district_abb}
             SELECT * FROM vmtmix_fy20.hourmix
             WHERE District = @analysis_district;
             """
         )
         if debug:
             self.hourmix = pd.read_sql(
-                f"SELECT * FROM hourmix_{self.district_abb}", self.conn
+                f"SELECT * FROM hourmix_running_{self.district_abb}", self.conn
             )
             self.test_hourmix_df_is_read()
             return self.hourmix
@@ -436,7 +436,7 @@ class RunningSqlCmds:
                 """CREATE INDEX IF NOT EXISTS  efidx3 ON emisrate (pollutantid, sourcetypeid, fueltypeid);"""
             )
             self.cur.execute(
-                f"""CREATE INDEX IF NOT EXISTS  houridx1 ON hourmix_{self.district_abb} (TOD);"""
+                f"""CREATE INDEX IF NOT EXISTS  houridx1 ON hourmix_running_{self.district_abb} (TOD);"""
             )
             self.cur.execute(
                 f"""CREATE INDEX IF NOT EXISTS  vmtidx1 ON vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix}
@@ -481,7 +481,7 @@ class RunningSqlCmds:
             self.cur.execute(
                 f"""
                 UPDATE emisrate a
-                JOIN hourmix_{self.district_abb} c ON
+                JOIN hourmix_running_{self.district_abb} c ON
                 a.hourid = c.TOD
                 SET a.HourMix = c.factor;
             """
@@ -536,10 +536,14 @@ class RunningSqlCmds:
         conflicted copy saved in mvs2014_erlt_conflicted schema.
         """
         start_time = time.time()
-        try:
-            cmd_insert_agg = f"""
+        cmd_insert = """
                 INSERT INTO mvs2014b_erlt_out.running_erlt_intermediate( Area, yearid, monthid, funclass, avgspeed, 
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, ACTE, ACROL, ETYB, DPM, POM)
+        """
+        cmd_create_conflicted = f"""
+             CREATE TABLE mvs2014b_erlt_conflicted.running_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}
+        """
+        cmd_common = """
                 SELECT Area,yearid,monthid,funclass,avgspeed,
                 SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
                 SUM(IF(pollutantid = 3, emisfact, 0)) AS NOX,
@@ -562,7 +566,9 @@ class RunningSqlCmds:
                 178, 181, 182, 183, 184), emisfact, 0)) AS POM
                 FROM emisrate
                 GROUP BY Area,yearid,monthid,funclass,avgspeed
-            """
+        """
+        try:
+            cmd_insert_agg = cmd_insert + cmd_common
             if not add_seperate_conflicted_copy:
                 self.cur.execute(cmd_insert_agg)
             else:
@@ -570,18 +576,7 @@ class RunningSqlCmds:
                     f"Saving running emission rate for {self.district_abb}, {self.analysis_year}, "
                     f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review."
                 )
-                cmd_create_agg = cmd_insert_agg.replace(
-                    """
-                 INSERT INTO mvs2014b_erlt_out.running_erlt_intermediate( Area, yearid, monthid, funclass, avgspeed, 
-                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, ACTE, ACROL, ETYB, DPM, POM)
-                 """,
-                    f"""
-                 CREATE TABLE mvs2014b_erlt_conflicted.{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}
-                 """,
-                )
-                self.cur.execute(
-                    f"DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}"
-                )
+                cmd_create_agg = cmd_create_conflicted + cmd_common
                 self.cur.execute(cmd_create_agg)
             print(
                 "---agg_by_rdtype_funcls_avgspd execution time:  %s seconds---"
@@ -619,15 +614,15 @@ if __name__ == "__main__":
     logging.info(f"# Start processing {db_nm}")
     elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm, county_abb_="elp")
     query_start_time = time.time()
-    elp_2022_7_obj.aggregate_emisrate_rateperdist()
-    hourmix_elp = elp_2022_7_obj.get_hour_mix_for_db_district()
-    vmt_mix_elp_2022 = (
-        elp_2022_7_obj.get_vmt_mix_for_db_district_weekday_closest_vmt_yr()
-    )
-    txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
-    elp_2022_7_obj.create_indices_before_joins()
-    elp_2022_7_obj.join_emisrate_vmt_tod_txled()
-    elp_2022_7_obj.compute_factored_emisrate()
+    # elp_2022_7_obj.aggregate_emisrate_rateperdist()
+    # hourmix_elp = elp_2022_7_obj.get_hour_mix_for_db_district()
+    # vmt_mix_elp_2022 = (
+    #     elp_2022_7_obj.get_vmt_mix_for_db_district_weekday_closest_vmt_yr()
+    # )
+    # txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
+    # elp_2022_7_obj.create_indices_before_joins()
+    # elp_2022_7_obj.join_emisrate_vmt_tod_txled()
+    # elp_2022_7_obj.compute_factored_emisrate()
     elp_2022_7_obj.agg_by_rdtype_funcls_avgspd(
         add_seperate_conflicted_copy=True, conflicted_copy_suffix="txled"
     )
