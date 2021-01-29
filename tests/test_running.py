@@ -44,7 +44,7 @@ def get_qaqc_tables_created_from_sql():
     cur = conn.cursor()
     cur.execute(" SHOW TABLES")
     tables_in_qaqc = cur.fetchall()
-    search_pat = re.compile(".*qaqc_from_orignal$")
+    search_pat = re.compile(".*running_qaqc_from_orignal$")
     table_names = [
         table[0] for table in tables_in_qaqc if re.search(search_pat, table[0])
     ]
