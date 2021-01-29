@@ -7,9 +7,9 @@ import time
 import pandas as pd
 import mariadb
 import os
-import datetime
 import logging
 from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_RUNNING
+from ttierlt.movesdb import MovesDb
 
 
 def create_running_table_in_db(delete_if_exists=False):
@@ -58,137 +58,22 @@ def create_running_table_in_db(delete_if_exists=False):
     conn.close()
 
 
-class RunningSqlCmds:
+class RunningSqlCmds(MovesDb):
     """
     Function to execute SQL commands for running emission process.
     """
-    DEBUG = True
-    # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf
-    # Make El Paso True for QAQC purposes.
-    MAP_DISTRICT_ABB_FULL_NM_TXLED = {
-        "elp": {"area_district": "El Paso", "txled_active": False},
-        "aus": {"area_district": "Austin", "txled_active": True},
-        "bmt": {"area_district": "Beaumont", "txled_active": True},
-        "crp": {
-            "area_district": "Corpus Christi",
-            "txled_active": True,
-        },  # Multiple counties in crp have TxLED.
-        "dal": {"area_district": "Dallas", "txled_active": True},
-        "ftw": {
-            "area_district": "Fort Worth",
-            "txled_active": True,
-        },  # Multiple counties in ftw have TxLED.
-        "hou": {"area_district": "Houston", "txled_active": True},
-        "wac": {"area_district": "Waco", "txled_active": True},
-        "sat": {"area_district": "San Antonio", "txled_active": True},
-    }
-    MAP_RD_TYPE = {
-        2: "Rural-Freeway",
-        3: "Rural-Arterial",
-        4: "Urban-Freeway",
-        5: "Urban-Arterial",
-    }
-    # TODO: Might change the time assignment for El Paso
-    MAP_PERIOD_HOURID = {
-        "AM": (7, 8, 9),
-        "PM": (17, 18, 19),
-        "MD": (10, 11, 12, 13, 14, 15, 16),
-        "ON": (1, 2, 3, 4, 5, 6, 20, 21, 22, 23, 24),
-    }
 
     def __init__(self, db_nm_, county_abb_):
-        self.db_nm = db_nm_
-        self.db_nm_county_year_month_dict = {
-            "county": db_nm_.split("_")[2],
-            "fips": db_nm_.split("_")[3],
-            "year": db_nm_.split("_")[4],
-            "month_id": db_nm_.split("_")[5],
-        }
-        """
-        Example: mvs14b_erlt_elp_48141_2020_1_cer_out can be decomposed as follows:
-            mvs14b: MOVES 2014---index 0
-            erlt: Project name; emission rate look-up table---index 1
-            elp: El-Passo---index 2
-            48141: FIPS code for El-Passo County---index 3
-            2020: Year---index 4
-            1: Month; Jan---index 5
-            cer: Garbage
-            out: Garbage
-        """
-        self.analysis_year = int(self.db_nm_county_year_month_dict["year"])
-        self.anaylsis_month = int(self.db_nm_county_year_month_dict["month_id"])
-        self.district_abb = self.db_nm_county_year_month_dict["county"]
-        self.area_district = self.MAP_DISTRICT_ABB_FULL_NM_TXLED[county_abb_][
-            "area_district"
-        ]
-        self.use_txled = self.MAP_DISTRICT_ABB_FULL_NM_TXLED[county_abb_][
-            "txled_active"
-        ]
-        self.analysis_year_todmix = None
-        self.get_tdmix_year()
-        # Connect to sql.
-        self.conn = connect_to_server_db(database_nm=self.db_nm)
-        self.cur = self.conn.cursor()
-        # SQL Housekeeping. Set DB specific variables in SQL.
-        self.sql_housekeeping()
+        super().__init__(
+            db_nm_ =db_nm_,
+            county_abb_=county_abb_
+        )
         self.head_emisrate_df = pd.DataFrame()
         self.hourmix = pd.DataFrame()
         self.vmtmix = pd.DataFrame()
-        self.txled = pd.DataFrame()
         self.created_all_indices = False
 
-    def __del__(self):
-        self.conn.close()
-
-    def get_tdmix_year(self):
-        if self.analysis_year > 2017:
-            if self.analysis_year <= 2022:
-                self.analysis_year_todmix = 2020
-            elif self.analysis_year <= 2027:
-                self.analysis_year_todmix = 2025
-            elif self.analysis_year <= 2032:
-                self.analysis_year_todmix = 2030
-            elif self.analysis_year <= 2037:
-                self.analysis_year_todmix = 2035
-            elif self.analysis_year <= 2042:
-                self.analysis_year_todmix = 2040
-            elif self.analysis_year <= 2047:
-                self.analysis_year_todmix = 2045
-            elif self.analysis_year <= 2052:
-                self.analysis_year_todmix = 2050
-            else:
-                raise ValueError("Analysis year is out of bounds; over 2052.")
-        else:
-            raise ValueError("Analysis year is out of bounds; under 2017.")
-
-    def sql_housekeeping(self):
-        self.cur.execute("SET SQL_SAFE_UPDATES = 0;")
-        self.cur.execute(f"SET @analysis_year = {self.analysis_year};")
-        self.cur.execute(f"SET @analysis_year_todmix = {self.analysis_year_todmix};")
-        self.cur.execute(f"SET @analysis_district = '{self.area_district}';")
-        if self.DEBUG:
-            self.test_sql_housekeeping()
-
-    def test_sql_housekeeping(self):
-        self.cur.execute(f"SELECT @analysis_year;")
-        test_analysis_yr = self.cur.fetchone()[0]
-        self.cur.execute(f"SELECT @analysis_year_todmix;")
-        test_analysis_yr_todmix = self.cur.fetchone()[0]
-        self.cur.execute(f"SELECT @analysis_district;")
-        test_analysis_district = self.cur.fetchone()[0]
-        assert (
-            test_analysis_yr == self.analysis_year
-        ), "@analysis_year variable is not correctly set in MariaDB."
-        assert abs(test_analysis_yr_todmix - self.analysis_year) <= 2, (
-            "Check the formula for analysis year for todmix."
-            "It should be within +-2 years on the analysis "
-            "year"
-        )
-        assert test_analysis_district == self.area_district, (
-            "@analysis_district variable is not correctly set " "in MariaDB."
-        )
-
-    def aggregate_emisrate_rateperdist(self, debug=DEBUG):
+    def aggregate_emisrate_rateperdist(self, debug=True):
         """
         Script creates the required base rate table from MOVES output databases
         Only required pollutants are selected based on the emissionrate output table
@@ -233,7 +118,7 @@ class RunningSqlCmds:
             return self.head_emisrate_df
         return pd.DataFrame()
 
-    def _update_emisrate_rateperdist(self, debug=DEBUG):
+    def _update_emisrate_rateperdist(self):
         # -- Script to add necessary fields to the rate table and populate it with appropriate data
         alter_table_avg_spd_cmds = """FLUSH TABLES;
             ALTER TABLE emisrate
@@ -276,17 +161,15 @@ class RunningSqlCmds:
             """
             self.cur.execute(cmd_period_hourid)
 
-    def get_hour_mix_for_db_district(self, debug=DEBUG):
+    def get_hourmix_for_db_district(self):
         """
         Script creates the hour-mix table from the MOVES database.table vmtmix_fy20.todmix.
         Parameters
         ----------
-        debug: bool
-            True, to save hourmix for debugging.
         Returns
         -------
         pd.DataFrame()
-            Returns empty pd.DataFrame() when debug = False; return entire hourmix if debug=True.
+            Returns entire hourmix table.
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE IF EXISTS hourmix_running_{self.district_abb};")
@@ -297,13 +180,11 @@ class RunningSqlCmds:
             WHERE District = @analysis_district;
             """
         )
-        if debug:
-            self.hourmix = pd.read_sql(
-                f"SELECT * FROM hourmix_running_{self.district_abb}", self.conn
-            )
-            self.test_hourmix_df_is_read()
-            return self.hourmix
-        return pd.DataFrame()
+        self.hourmix = pd.read_sql(
+            f"SELECT * FROM hourmix_running_{self.district_abb}", self.conn
+        )
+        self.test_hourmix_df_is_read()
+        return self.hourmix
 
     def test_hourmix_df_is_read(self):
         """Test if data was read from the hourmix table."""
@@ -313,21 +194,17 @@ class RunningSqlCmds:
             "District column of vmtmix_fy20.hourmix"
         )
 
-    def get_vmt_mix_for_db_district_weekday_closest_vmt_yr(self, debug=DEBUG):
+    def get_vmtmix_for_db_district_weekday_closest_vmt_yr(self):
         """
         Script creates the VMT-mix table from the movesactivity output table available in the MOVES output databse
         used for rate development. The input table is stored as vmtmix_fy20.todmix.
         Note:The years are in increments of 5: 2020, 2025, 2030... in vmtmix_fy20.todmix. Use analysis_year_todmix to
         refrence the correct year in vmtmix_fy20.todmix for the analysis_year of this database. E.g. if the analysis
         year of the database is 2022 then the year in vmtmix_fy20.todmix table is 2020.
-        Parameters
-        ----------
-        debug: bool
-            True, to save vmtmix for debugging.
         Returns
         -------
         pd.DataFrame()
-            Returns empty pd.DataFrame() when debug = False; return entire vmtmix if debug=True.
+            Returns entire vmtmix table.
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(
@@ -340,14 +217,12 @@ class RunningSqlCmds:
             WHERE TxDOT_Dist = @analysis_district and Daytype = "Weekday" and YearID =  @analysis_year_todmix;
             """
         )
-        if debug:
-            self.vmtmix = pd.read_sql(
-                f"SELECT * FROM  vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix} ",
-                self.conn,
-            )
-            self.test_todmix_df_is_read()
-            return self.vmtmix
-        return pd.DataFrame()
+        self.vmtmix = pd.read_sql(
+            f"SELECT * FROM  vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix} ",
+            self.conn,
+        )
+        self.test_todmix_df_is_read()
+        return self.vmtmix
 
     def test_todmix_df_is_read(self):
         """Test if data in vmtmix table."""
@@ -355,72 +230,6 @@ class RunningSqlCmds:
             "No data in hourmix table. Check area_district variable in python and "
             "@analysis_district variable in sql. See if these variable value are present in "
             "District column of vmtmix_fy20.hourmix"
-        )
-
-    def get_txled_for_db_district_year(self, debug=DEBUG):
-        """
-        Get the TxLED factors by year from the txled_db.txled_long table. Use use_txled to determine if a county/
-        district has TxLED program. Use @analysis_year to filter TxLed factor years to only the analysis year.
-        Parameters
-        ----------
-        debug: bool
-            True, to save txled for debugging.
-        Returns
-        -------
-        dict
-            Returns dict with {"txled_df": pd.DataFrame(), "txled_yr": -999} when county/district does not
-            have TxLed program OR debug = False;
-            return entire txled data and the year in the sql table if debug=True.
-        """
-        if self.use_txled:
-            self.cur.execute("FLUSH TABLES;")
-            self.cur.execute(
-                f"DROP TABLE  IF EXISTS txled_long_{self.district_abb}_{self.analysis_year};"
-            )
-            self.cur.execute(
-                f"""
-                CREATE TABLE txled_long_{self.district_abb}_{self.analysis_year} 
-                SELECT * FROM txled_db.txled_long
-                WHERE yearid = @analysis_year;
-            """
-            )
-            self.cur.execute(
-                f"SELECT DISTINCT yearid FROM txled_long_{self.district_abb}_{self.analysis_year};"
-            )
-            txled_yearid_from_sql_table = self.cur.fetchone()[0]
-            self.test_txled_cor_year_pulled(txled_yearid_from_sql_table)
-            # Reduce the TxLed table size.
-            self.cur.execute(
-                f"""
-                ALTER TABLE txled_long_{self.district_abb}_{self.analysis_year}
-                DROP yearid,
-                MODIFY pollutantid SMALLINT,
-                MODIFY sourcetypeid SMALLINT,
-                MODIFY fueltypeid SMALLINT,
-                MODIFY txled_fac FLOAT(6);
-            """
-            )
-            if debug:
-                self.txled = pd.read_sql(
-                    f"SELECT * FROM  txled_long_{self.district_abb}_{self.analysis_year} ",
-                    self.conn,
-                )
-                self.test_txled_df_is_read()
-                return {"txled_df": self.txled, "txled_yr": txled_yearid_from_sql_table}
-        return {"txled_df": pd.DataFrame(), "txled_yr": -999}
-
-    def test_txled_cor_year_pulled(self, txled_yr):
-        """Check if the year matches for TxLED and the MOVES database under processing."""
-        assert txled_yr == self.analysis_year, (
-            "Compare the self.analysis_year with yearid in self.txled. See why "
-            "there is a mismatch."
-        )
-
-    def test_txled_df_is_read(self):
-        """Test if there is data in TxLED table."""
-        assert len(self.txled) >= 1, (
-            "No data in txled table. Compare  the self.analysis_year with yearid "
-            "in self.txled"
         )
 
     def create_indices_before_joins(self):
@@ -528,7 +337,7 @@ class RunningSqlCmds:
         )
 
     def agg_by_rdtype_funcls_avgspd(
-        self, add_seperate_conflicted_copy=True, conflicted_copy_suffix=""
+        self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""
     ):
         """
         Aggregate (sum) emission rate by Area, yearid, monthid, funclass, avgspeed. Insert the aggregated table
@@ -577,6 +386,9 @@ class RunningSqlCmds:
                     f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review."
                 )
                 cmd_create_agg = cmd_create_conflicted + cmd_common
+                self.cur.execute(f"""
+                    DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.running_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix};
+                """)
                 self.cur.execute(cmd_create_agg)
             print(
                 "---agg_by_rdtype_funcls_avgspd execution time:  %s seconds---"
@@ -602,33 +414,30 @@ if __name__ == "__main__":
     path_to_log_dir = os.path.join(PATH_INTERIM_RUNNING, "Log Files")
     if not os.path.exists(path_to_log_dir):
         os.mkdir(path_to_log_dir)
-    path_log_file = os.path.join(path_to_log_dir, "log_batch_sql.log")
+    path_log_file = os.path.join(path_to_log_dir, "running_test_sql.log")
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
     # ---
-    RunningSqlCmds.DEBUG = True
-    TESTING_txled_par = True
-    if TESTING_txled_par:
-        RunningSqlCmds.MAP_DISTRICT_ABB_FULL_NM_TXLED["elp"]["txled_active"] = True
     db_nms_list = get_db_nm_list(county_abb="elp")
     db_nm = "mvs14b_erlt_elp_48141_2022_7_cer_out"
     logging.info(f"# Start processing {db_nm}")
     elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm, county_abb_="elp")
     query_start_time = time.time()
-    # elp_2022_7_obj.aggregate_emisrate_rateperdist()
-    # hourmix_elp = elp_2022_7_obj.get_hour_mix_for_db_district()
-    # vmt_mix_elp_2022 = (
-    #     elp_2022_7_obj.get_vmt_mix_for_db_district_weekday_closest_vmt_yr()
-    # )
-    # txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
-    # elp_2022_7_obj.create_indices_before_joins()
-    # elp_2022_7_obj.join_emisrate_vmt_tod_txled()
-    # elp_2022_7_obj.compute_factored_emisrate()
-    elp_2022_7_obj.agg_by_rdtype_funcls_avgspd(
-        add_seperate_conflicted_copy=True, conflicted_copy_suffix="txled"
+    elp_2022_7_obj.aggregate_emisrate_rateperdist()
+    hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
+    vmt_mix_elp_2022 = (
+        elp_2022_7_obj.get_vmtmix_for_db_district_weekday_closest_vmt_yr()
     )
-    if RunningSqlCmds.DEBUG:
-        logging.info(
-            "---Query execution time:  %s seconds ---"
-            % (time.time() - query_start_time)
-        )
+    txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
+    elp_2022_7_obj.create_indices_before_joins()
+    elp_2022_7_obj.join_emisrate_vmt_tod_txled()
+    elp_2022_7_obj.compute_factored_emisrate()
+    elp_2022_7_obj.agg_by_rdtype_funcls_avgspd(
+        add_seperate_conflicted_copy=True, conflicted_copy_suffix="drop_after_testing"
+    )
+    elp_2022_7_obj.close_conn()
+    logging.info(
+        "---Query execution time:  %s seconds ---"
+        % (time.time() - query_start_time)
+    )
     logging.info(f"# End processing {db_nm}")
+    del elp_2022_7_obj
