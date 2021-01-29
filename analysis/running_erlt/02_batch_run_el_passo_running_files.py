@@ -9,9 +9,8 @@ import logging
 import time
 import datetime
 from ttierlt.utils import PATH_INTERIM_RUNNING, get_db_nm_list
-from ttierlt.running.batch_sql import RunningSqlCmds as erltRunning
+from ttierlt.running.running_batch_sql import RunningSqlCmds as erltRunning
 
-DEBUG = False
 
 if __name__ == "__main__":
     # Set logging file details.
@@ -19,7 +18,7 @@ if __name__ == "__main__":
     if not os.path.exists(path_to_log_dir):
         os.mkdir(path_to_log_dir)
     logfilenm = datetime.datetime.now().strftime(
-        "log_02_batch_run_el_passo_running_files_%H_%M_%d_%m_%Y.log"
+        "running_%H_%M_%d_%m_%Y.log"
     )
     path_log_file = os.path.join(path_to_log_dir, logfilenm)
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
@@ -27,14 +26,8 @@ if __name__ == "__main__":
     # TODO: Inventory and skip processed files.
 
     db_nms_list = get_db_nm_list(county_abb="elp")
-    STOP_ITER = 10
-    ITER_CNTER = 0
     for db_nm in db_nms_list:
         start_time = time.time()
-        if DEBUG & (ITER_CNTER == STOP_ITER):
-            break
-        ITER_CNTER = ITER_CNTER + 1
-
         # Run the SQL Commands on the database.
         ########################################################
         logging.info(f"# Start processing {db_nm}")
@@ -43,9 +36,9 @@ if __name__ == "__main__":
         erlt_running_obj = erltRunning(db_nm_=db_nm, county_abb_="elp")
         query_start_time = time.time()
         erlt_running_obj.aggregate_emisrate_rateperdist()
-        hourmix_elp = erlt_running_obj.get_hour_mix_for_db_district()
+        hourmix_elp = erlt_running_obj.get_hourmix_for_db_district()
         vmt_mix_elp_2022 = (
-            erlt_running_obj.get_vmt_mix_for_db_district_weekday_closest_vmt_yr()
+            erlt_running_obj.get_vmtmix_for_db_district_weekday_closest_vmt_yr()
         )
         txled_elp_dict = erlt_running_obj.get_txled_for_db_district_year()
         erlt_running_obj.create_indices_before_joins()
@@ -65,4 +58,5 @@ if __name__ == "__main__":
         print(
             "------------------------------------------------------------------------------------------"
         )
+        erlt_running_obj.close_conn()
         del erlt_running_obj

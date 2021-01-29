@@ -8,7 +8,7 @@ from ttierlt.utils import (
     get_db_nm_list,
     create_qaqc_output_conflicted_schema,
 )
-from ttierlt.running.batch_sql import create_running_table_in_db
+from ttierlt.running.running_batch_sql import create_running_table_in_db
 
 conn = connect_to_server_db(database_nm=None)
 cur = conn.cursor()
