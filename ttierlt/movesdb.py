@@ -3,7 +3,7 @@ from ttierlt.utils import connect_to_server_db
 
 
 class MovesDb:
-    def __init__(self, db_nm_, county_abb_):
+    def __init__(self, db_nm_):
 
         # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf
         self.MAP_DISTRICT_ABB_FULL_NM_TXLED = {
@@ -57,10 +57,10 @@ class MovesDb:
         self.analysis_year = int(self.db_nm_county_year_month_dict["year"])
         self.anaylsis_month = int(self.db_nm_county_year_month_dict["month_id"])
         self.district_abb = self.db_nm_county_year_month_dict["county"]
-        self.area_district = self.MAP_DISTRICT_ABB_FULL_NM_TXLED[county_abb_][
+        self.area_district = self.MAP_DISTRICT_ABB_FULL_NM_TXLED[self.district_abb][
             "area_district"
         ]
-        self.use_txled = self.MAP_DISTRICT_ABB_FULL_NM_TXLED[county_abb_][
+        self.use_txled = self.MAP_DISTRICT_ABB_FULL_NM_TXLED[self.district_abb][
             "txled_active"
         ]
         self.analysis_year_todmix = None
@@ -133,24 +133,24 @@ class MovesDb:
         if self.use_txled:
             self.cur.execute("FLUSH TABLES;")
             self.cur.execute(
-                f"DROP TABLE  IF EXISTS txled_long_{self.district_abb}_{self.analysis_year};"
+                f"DROP TABLE  IF EXISTS txled_long_{self.analysis_year};"
             )
             self.cur.execute(
                 f"""
-                CREATE TABLE txled_long_{self.district_abb}_{self.analysis_year} 
+                CREATE TABLE txled_long_{self.analysis_year} 
                 SELECT * FROM txled_db.txled_long
                 WHERE yearid = @analysis_year;
             """
             )
             self.cur.execute(
-                f"SELECT DISTINCT yearid FROM txled_long_{self.district_abb}_{self.analysis_year};"
+                f"SELECT DISTINCT yearid FROM txled_long_{self.analysis_year};"
             )
             txled_yearid_from_sql_table = self.cur.fetchone()[0]
             self.test_txled_cor_year_pulled(txled_yearid_from_sql_table)
             # Reduce the TxLed table size.
             self.cur.execute(
                 f"""
-                ALTER TABLE txled_long_{self.district_abb}_{self.analysis_year}
+                ALTER TABLE txled_long_{self.analysis_year}
                 DROP yearid,
                 MODIFY pollutantid SMALLINT,
                 MODIFY sourcetypeid SMALLINT,
@@ -159,7 +159,7 @@ class MovesDb:
             """
             )
             self.txled_df = pd.read_sql(
-                f"SELECT * FROM  txled_long_{self.district_abb}_{self.analysis_year} ",
+                f"SELECT * FROM  txled_long_{self.analysis_year} ",
                 self.conn,
             )
             self.test_txled_df_is_read()
