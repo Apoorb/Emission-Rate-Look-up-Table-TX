@@ -18,15 +18,15 @@ create_qaqc_output_conflicted_schema()
 # Delete the existing output table. It cannot have duplicated data; will raise error if you try to add
 # duplicated data.
 delete_running_table_if_exists = input(
-    "Do you want to loose the data from previous runs and create a fresh table?(y/n)"
+    "Do you want to loose the data from previous runs and create a fresh running_erlt_intermediate table?(y/n)"
 )
 delete_if_exists_user_input = False
 if delete_running_table_if_exists.lower() == "y":
     print(
-        "Change the delete_if_exists_user_input parameter to True. I am intentionally not automating it."
+        "Change the delete_if_exists_user_input parameter to True below. I am intentionally not automating it."
     )
     delete_if_exists_user_input = False
-    create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
+create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
 
 # Clean-up existing intermediate tables.
 for db_nm in get_db_nm_list("elp"):
