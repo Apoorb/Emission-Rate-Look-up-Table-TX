@@ -8,6 +8,7 @@ from ttierlt.utils import (
     get_db_nm_list,
     create_qaqc_output_conflicted_schema,
 )
+from ttierlt.movesdb import MovesDb
 from ttierlt.running.running_batch_sql import create_running_table_in_db
 
 conn = connect_to_server_db(database_nm=None)
@@ -17,24 +18,22 @@ create_qaqc_output_conflicted_schema()
 
 # Delete the existing output table. It cannot have duplicated data; will raise error if you try to add
 # duplicated data.
-delete_running_table_if_exists = input(
-    "Do you want to loose the data from previous runs and create a fresh running_erlt_intermediate table?(y/n)"
-)
-delete_if_exists_user_input = False
-if delete_running_table_if_exists.lower() == "y":
-    print(
-        "Change the delete_if_exists_user_input parameter to True below. I am intentionally not automating it."
+delete_if_exists = False
+if delete_if_exists:
+    delete_if_exists_user_input = input(
+        "Do you want to loose the data from previous runs and create a fresh running_erlt_intermediate table?(y/n)"
     )
-    delete_if_exists_user_input = False
-create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
+    if delete_if_exists_user_input.lower() == "y":
+        create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
 
 # Clean-up existing intermediate tables.
+
 for db_nm in get_db_nm_list("elp"):
-    conn = connect_to_server_db(database_nm=db_nm)
-    cur = conn.cursor()
-    cur.execute(f"DROP TABLE  IF EXISTS TxLed_Long_Copy;")
-    cur.execute(f"DROP TABLE IF EXISTS hourmix;")
-    cur.execute(
+    db_obj = MovesDb(db_nm)
+    db_obj.cur.execute(f"DROP TABLE  IF EXISTS TxLed_Long_Copy;")
+    db_obj.cur.execute(f"DROP TABLE  IF EXISTS txled_long_{db_obj.district_abb}_{db_obj.analysis_year}")
+    db_obj.cur.execute(f"DROP TABLE IF EXISTS hourmix;")
+    db_obj.cur.execute(
         f"""
         SELECT * 
         FROM information_schema.tables
@@ -43,7 +42,7 @@ for db_nm in get_db_nm_list("elp"):
         LIMIT 1;
     """
     )
-    if cur.fetchone() != None:
-        cur.execute(f"RENAME TABLE hourmix_elp TO hourmix_running_elp;")
-    cur.execute(f"DROP TABLE IF EXISTS vmtmix;")
+    if db_obj.cur.fetchone() != None:
+        db_obj.cur.execute(f"RENAME TABLE hourmix_elp TO hourmix_running_elp;")
+    db_obj.cur.execute(f"DROP TABLE IF EXISTS vmtmix;")
 conn.close()
