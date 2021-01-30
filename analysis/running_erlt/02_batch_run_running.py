@@ -7,6 +7,8 @@ Date Created: 01/22/2021
 import os
 import logging
 import time
+import functools
+import operator
 import datetime
 from ttierlt.utils import PATH_INTERIM_RUNNING, get_db_nm_list
 from ttierlt.running.running_batch_sql import RunningSqlCmds as erltRunning
@@ -23,7 +25,9 @@ if __name__ == "__main__":
     # # Get list of processed databases.
     # TODO: Inventory and skip processed files.
 
-    db_nms_list = get_db_nm_list(county_abb="elp")
+    county_abbs = ["aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
+    db_nms_list_temp = [get_db_nm_list(county_abb=county_abb_) for county_abb_ in county_abbs]
+    db_nms_list = functools.reduce(operator.iconcat, db_nms_list_temp, [])
     for db_nm in db_nms_list:
         start_time = time.time()
         # Run the SQL Commands on the database.
@@ -31,7 +35,7 @@ if __name__ == "__main__":
         logging.info(f"# Start processing {db_nm}")
         print(f"# Start processing {db_nm}")
         print("-------------------------------------------------------------------")
-        erlt_running_obj = erltRunning(db_nm_=db_nm, county_abb_="elp")
+        erlt_running_obj = erltRunning(db_nm_=db_nm)
         query_start_time = time.time()
         erlt_running_obj.aggregate_emisrate_rateperdist()
         hourmix_elp = erlt_running_obj.get_hourmix_for_db_district()
