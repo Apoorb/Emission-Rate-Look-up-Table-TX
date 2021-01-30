@@ -63,8 +63,8 @@ class RunningSqlCmds(MovesDb):
     Class to execute SQL commands for running emission process.
     """
 
-    def __init__(self, db_nm_, county_abb_):
-        super().__init__(db_nm_=db_nm_, county_abb_=county_abb_)
+    def __init__(self, db_nm_):
+        super().__init__(db_nm_=db_nm_)
         self.head_emisrate_df = pd.DataFrame()
         self.hourmix = pd.DataFrame()
         self.vmtmix = pd.DataFrame()
@@ -251,7 +251,7 @@ class RunningSqlCmds(MovesDb):
             if self.use_txled:
                 self.cur.execute(
                     f"""
-                    CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.district_abb}_{self.analysis_year} 
+                    CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.analysis_year}
                     (pollutantid, sourcetypeid, fueltypeid);
                 """
                 )
@@ -296,7 +296,7 @@ class RunningSqlCmds(MovesDb):
                 self.cur.execute(
                     f"""
                     UPDATE emisrate a
-                    LEFT JOIN txled_long_{self.district_abb}_{self.analysis_year}  d  ON
+                    LEFT JOIN txled_long_{self.analysis_year} d  ON
                     a.pollutantid = d.pollutantid AND
                     a.sourcetypeid = d.sourcetypeid AND
                     a.fueltypeid = d.fueltypeid
@@ -419,7 +419,7 @@ if __name__ == "__main__":
     db_nms_list = get_db_nm_list(county_abb="elp")
     db_nm = "mvs14b_erlt_elp_48141_2022_7_cer_out"
     logging.info(f"# Start processing {db_nm}")
-    elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm, county_abb_="elp")
+    elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm)
     query_start_time = time.time()
     # elp_2022_7_obj.aggregate_emisrate_rateperdist()
     # hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
