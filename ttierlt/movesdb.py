@@ -1,5 +1,5 @@
 import pandas as pd
-from ttierlt.utils import  connect_to_server_db
+from ttierlt.utils import connect_to_server_db
 
 
 class MovesDb:

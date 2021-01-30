@@ -64,10 +64,7 @@ class RunningSqlCmds(MovesDb):
     """
 
     def __init__(self, db_nm_, county_abb_):
-        super().__init__(
-            db_nm_ =db_nm_,
-            county_abb_=county_abb_
-        )
+        super().__init__(db_nm_=db_nm_, county_abb_=county_abb_)
         self.head_emisrate_df = pd.DataFrame()
         self.hourmix = pd.DataFrame()
         self.vmtmix = pd.DataFrame()
@@ -386,9 +383,11 @@ class RunningSqlCmds(MovesDb):
                     f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review."
                 )
                 cmd_create_agg = cmd_create_conflicted + cmd_common
-                self.cur.execute(f"""
+                self.cur.execute(
+                    f"""
                     DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.running_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix};
-                """)
+                """
+                )
                 self.cur.execute(cmd_create_agg)
             print(
                 "---agg_by_rdtype_funcls_avgspd execution time:  %s seconds---"
@@ -422,8 +421,8 @@ if __name__ == "__main__":
     logging.info(f"# Start processing {db_nm}")
     elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm, county_abb_="elp")
     query_start_time = time.time()
-    #elp_2022_7_obj.aggregate_emisrate_rateperdist()
-    #hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
+    # elp_2022_7_obj.aggregate_emisrate_rateperdist()
+    # hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
     vmt_mix_elp_2022 = (
         elp_2022_7_obj.get_vmtmix_for_db_district_weekday_closest_vmt_yr()
     )
@@ -436,8 +435,7 @@ if __name__ == "__main__":
     )
     elp_2022_7_obj.close_conn()
     logging.info(
-        "---Query execution time:  %s seconds ---"
-        % (time.time() - query_start_time)
+        "---Query execution time:  %s seconds ---" % (time.time() - query_start_time)
     )
     logging.info(f"# End processing {db_nm}")
     del elp_2022_7_obj

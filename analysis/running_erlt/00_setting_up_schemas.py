@@ -34,13 +34,15 @@ for db_nm in get_db_nm_list("elp"):
     cur = conn.cursor()
     cur.execute(f"DROP TABLE  IF EXISTS TxLed_Long_Copy;")
     cur.execute(f"DROP TABLE IF EXISTS hourmix;")
-    cur.execute(f"""
+    cur.execute(
+        f"""
         SELECT * 
         FROM information_schema.tables
         WHERE table_schema = '{db_nm}' 
         AND table_name = 'hourmix_elp'
         LIMIT 1;
-    """)
+    """
+    )
     if cur.fetchone() != None:
         cur.execute(f"RENAME TABLE hourmix_elp TO hourmix_running_elp;")
     cur.execute(f"DROP TABLE IF EXISTS vmtmix;")

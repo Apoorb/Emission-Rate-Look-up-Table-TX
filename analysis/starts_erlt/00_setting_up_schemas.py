@@ -27,4 +27,3 @@ if delete_starts_table_if_exists.lower() == "y":
     )
     delete_if_exists_user_input = False
 create_starts_table_in_db(delete_if_exists=delete_if_exists_user_input)
-

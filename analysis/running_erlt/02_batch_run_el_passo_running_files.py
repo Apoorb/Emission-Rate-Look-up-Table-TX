@@ -17,9 +17,7 @@ if __name__ == "__main__":
     path_to_log_dir = os.path.join(PATH_INTERIM_RUNNING, "Log Files")
     if not os.path.exists(path_to_log_dir):
         os.mkdir(path_to_log_dir)
-    logfilenm = datetime.datetime.now().strftime(
-        "running_%H_%M_%d_%m_%Y.log"
-    )
+    logfilenm = datetime.datetime.now().strftime("running_%H_%M_%d_%m_%Y.log")
     path_log_file = os.path.join(path_to_log_dir, logfilenm)
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
     # # Get list of processed databases.
