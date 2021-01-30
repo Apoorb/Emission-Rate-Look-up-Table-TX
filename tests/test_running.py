@@ -58,10 +58,19 @@ def get_qaqc_tables_created_from_sql():
 
 @pytest.fixture(scope="session")
 def get_py_sql_df_list(get_erlt_running_2014b_data_py, get_qaqc_tables_created_from_sql, request):
-    group_area_yearId_monthid_py = get_erlt_running_2014b_data_py.groupby(["Area", "yearid", "monthid"])
-    group_area_yearId_monthid_sql = get_qaqc_tables_created_from_sql.groupby(["Area", "yearid", "monthid"])
-    py_erlt_df_fil = group_area_yearId_monthid_py.get_group(request.param["grp_key"]).reset_index(drop=True)
-    sql_erlt_df_fil = group_area_yearId_monthid_sql.get_group(request.param["grp_key"]).reset_index(drop=True)
+    group_area_yearid_monthid_py = get_erlt_running_2014b_data_py.groupby(["Area", "yearid", "monthid"])
+    group_area_yearid_monthid_sql = get_qaqc_tables_created_from_sql.groupby(["Area", "yearid", "monthid"])
+    try:
+        py_erlt_df_fil = group_area_yearid_monthid_py.get_group(request.param["grp_key"]).reset_index(drop=True)
+    except KeyError as err1:
+        print(err1, f"!!!Data for {request.param['grp_key']} does not exists in running_erlt_intermediate!!!!")
+        raise
+    try:
+        sql_erlt_df_fil = group_area_yearid_monthid_sql.get_group(request.param["grp_key"]).reset_index(drop=True)
+    except KeyError as err1:
+        print(err1, f"!!!Data for {request.param['grp_key']} does not exists in mvs2014b_erlt_qaqc!!!!")
+        raise
+
     return {"py_erlt_df_fil": py_erlt_df_fil, "sql_erlt_df_fil": sql_erlt_df_fil, "grp_key": request.param["grp_key"]}
 
 
