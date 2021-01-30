@@ -60,7 +60,7 @@ def create_running_table_in_db(delete_if_exists=False):
 
 class RunningSqlCmds(MovesDb):
     """
-    Function to execute SQL commands for running emission process.
+    Class to execute SQL commands for running emission process.
     """
 
     def __init__(self, db_nm_, county_abb_):
@@ -422,8 +422,8 @@ if __name__ == "__main__":
     logging.info(f"# Start processing {db_nm}")
     elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm, county_abb_="elp")
     query_start_time = time.time()
-    elp_2022_7_obj.aggregate_emisrate_rateperdist()
-    hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
+    #elp_2022_7_obj.aggregate_emisrate_rateperdist()
+    #hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
     vmt_mix_elp_2022 = (
         elp_2022_7_obj.get_vmtmix_for_db_district_weekday_closest_vmt_yr()
     )
