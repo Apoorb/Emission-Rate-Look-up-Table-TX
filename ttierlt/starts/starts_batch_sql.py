@@ -7,6 +7,7 @@ import time
 import pandas as pd
 import mariadb
 import os
+import numpy as np
 import datetime
 import logging
 from ttierlt.movesdb import MovesDb
@@ -64,8 +65,8 @@ class StartSqlCmds(MovesDb):
     Class to execute SQL commands for starts emission process.
     """
 
-    def __init__(self, db_nm_, county_abb_):
-        super().__init__(db_nm_=db_nm_, county_abb_=county_abb_)
+    def __init__(self, db_nm_):
+        super().__init__(db_nm_=db_nm_)
         self.moves2014b_db_nm = "movesdb20181022"
         self.fueltypedict = {1: "Gasoline", 2: "Diesel"}
         self.head_startrate_df = pd.DataFrame()
@@ -176,7 +177,16 @@ class StartSqlCmds(MovesDb):
         self.cur.execute(cmd_hourmix_starts)
         self._update_hourmix_starts()
         self.hourmix_starts = pd.read_sql(f"SELECT * FROM hourmix_starts", self.conn)
+        self.test_hourmix_starts()
         return self.hourmix_starts
+
+    def test_hourmix_starts(self):
+        assert np.allclose(
+            self.hourmix_starts.groupby(["sourceTypeID", "fuelTypeID"])
+            .hrmix.sum()
+            .values,
+            1,
+        )
 
     def _update_hourmix_starts(self):
         """Add additional fields to hourmix_starts and add a daily daily (24 hours) starts per vehicle column to
@@ -221,7 +231,7 @@ class StartSqlCmds(MovesDb):
             if self.use_txled:
                 self.cur.execute(
                     f"""
-                    CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.district_abb}_{self.analysis_year} 
+                    CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.analysis_year} 
                     (pollutantid, sourcetypeid, fueltypeid);
                 """
                 )
@@ -255,7 +265,7 @@ class StartSqlCmds(MovesDb):
                 self.cur.execute(
                     f"""
                     UPDATE startrate a
-                    LEFT JOIN txled_long_{self.district_abb}_{self.analysis_year}  d  ON
+                    LEFT JOIN txled_long_{self.analysis_year}  d  ON
                     a.pollutantid = d.pollutantid AND
                     a.sourcetypeid = d.sourcetypeid AND
                     a.fueltypeid = d.fueltypeid
@@ -377,11 +387,11 @@ if __name__ == "__main__":
     db_nms_list = get_db_nm_list(county_abb="elp")
     db_nm = "mvs14b_erlt_elp_48141_2022_7_cer_out"
     logging.info(f"# Start processing {db_nm}")
-    elp_2022_7_obj = StartSqlCmds(db_nm_=db_nm, county_abb_="elp")
+    elp_2022_7_obj = StartSqlCmds(db_nm_=db_nm)
     query_start_time = time.time()
     sample_startrate = elp_2022_7_obj.aggregate_startrate_rateperstart()
     hourmix_starts = elp_2022_7_obj.get_hourmix_starts()
-    TESTING_TXLED = False
+    TESTING_TXLED = True
     if TESTING_TXLED:
         elp_2022_7_obj.use_txled = True
     txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
@@ -389,7 +399,7 @@ if __name__ == "__main__":
     elp_2022_7_obj.join_startrate_txled_hourmix()
     elp_2022_7_obj.compute_factored_startrate()
     elp_2022_7_obj.agg_by_vehtyp_fueltyp(
-        add_seperate_conflicted_copy=False, conflicted_copy_suffix="drop_after_testing"
+        add_seperate_conflicted_copy=True, conflicted_copy_suffix="drop_after_testing"
     )
     elp_2022_7_obj.close_conn()
     logging.info(
