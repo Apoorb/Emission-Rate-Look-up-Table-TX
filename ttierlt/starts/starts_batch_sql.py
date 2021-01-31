@@ -71,14 +71,12 @@ class StartSqlCmds(MovesDb):
         self.fueltypedict = {1: "Gasoline", 2: "Diesel"}
         self.head_startrate_df = pd.DataFrame()
         self.hourmix_starts = pd.DataFrame()
-        self.vmtmix = pd.DataFrame()
-        self.txled = pd.DataFrame()
         self.created_all_indices = False
 
     def aggregate_startrate_rateperstart(self, debug=True):
         """
         Script creates the required start rate table from MOVES output databases
-        Only required pollutants are selected based on the startrate output table
+        Only required pollutants are selected based on the rateperstart output table
         Emission rates are summed overyearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid.
         Parameters
         ----------

@@ -25,7 +25,7 @@ where District = "El Paso";
 
 -- Script creates the VMT-mix table from the movesactivity output table available in the MOVES output databse used for rate development
 
-flush tables;mvs14b_erlt_elp_48141_2020_1_cer_out_qaqc_from_orignal
+flush tables;
 drop table  if exists mvs14b_erlt_elp_48141_2020_1_cer_out.VMTmix;
 create table mvs14b_erlt_elp_48141_2020_1_cer_out.VMTmix 
 SELECT * FROM vmtmix_fy20.todmix 

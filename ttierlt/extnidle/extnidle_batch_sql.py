@@ -13,6 +13,7 @@ import logging
 from ttierlt.movesdb import MovesDb
 from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_EXTNIDLE
 
+
 def create_extnidle_table_in_db(delete_if_exists=False):
     pass
 
@@ -22,7 +23,9 @@ class ExtnidleSqlCmds(MovesDb):
     """
     Class to execute SQL commands for extended idling emission process.
     """
-    sourcetypedict={"Combination Long-haul Truck": 62}
+
+    sourcetypedict = {"Combination Long-haul Truck": 62}
+
     def __init__(self, db_nm_):
         super().__init__(db_nm_=db_nm_)
         self.moves2014b_db_nm = "movesdb20181022"

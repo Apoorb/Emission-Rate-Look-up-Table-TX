@@ -132,9 +132,7 @@ class MovesDb:
         """
         if self.use_txled:
             self.cur.execute("FLUSH TABLES;")
-            self.cur.execute(
-                f"DROP TABLE  IF EXISTS txled_long_{self.analysis_year};"
-            )
+            self.cur.execute(f"DROP TABLE  IF EXISTS txled_long_{self.analysis_year};")
             self.cur.execute(
                 f"""
                 CREATE TABLE txled_long_{self.analysis_year} 

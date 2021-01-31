@@ -31,7 +31,9 @@ if delete_if_exists:
 for db_nm in get_db_nm_list("elp"):
     db_obj = MovesDb(db_nm)
     db_obj.cur.execute(f"DROP TABLE  IF EXISTS TxLed_Long_Copy;")
-    db_obj.cur.execute(f"DROP TABLE  IF EXISTS txled_long_{db_obj.district_abb}_{db_obj.analysis_year}")
+    db_obj.cur.execute(
+        f"DROP TABLE  IF EXISTS txled_long_{db_obj.district_abb}_{db_obj.analysis_year}"
+    )
     db_obj.cur.execute(f"DROP TABLE IF EXISTS hourmix;")
     db_obj.cur.execute(
         f"""
