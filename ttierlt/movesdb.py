@@ -4,7 +4,7 @@ from ttierlt.utils import connect_to_server_db
 
 class MovesDb:
     def __init__(self, db_nm_):
-
+        self.moves2014b_db_nm = "movesdb20181022"
         # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf
         self.MAP_DISTRICT_ABB_FULL_NM_TXLED = {
             "elp": {"area_district": "El Paso", "txled_active": False},
