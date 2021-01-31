@@ -12,7 +12,6 @@ import functools
 import operator
 from ttierlt.utils import PATH_INTERIM_STARTS, get_db_nm_list
 from ttierlt.starts.starts_batch_sql import StartSqlCmds as erltStarts
-from ttierlt.movesdb import MovesDb
 
 
 if __name__ == "__main__":
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     # # Get list of processed databases.
     # TODO: Inventory and skip processed files.
 
-    county_abbs = ["aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
+    county_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
     db_nms_list_temp = [
         get_db_nm_list(county_abb=county_abb_) for county_abb_ in county_abbs
     ]
@@ -39,9 +38,8 @@ if __name__ == "__main__":
         logging.info(f"# Start processing {db_nm}")
         print(f"# Start processing {db_nm}")
         print("-------------------------------------------------------------------")
+        query_start_time = time.time()
         erlt_starts_obj = erltStarts(db_nm_=db_nm)
-        query_start_time = time.time()
-        query_start_time = time.time()
         sample_startrate = erlt_starts_obj.aggregate_startrate_rateperstart()
         hourmix_starts = erlt_starts_obj.get_hourmix_starts()
         txled_elp_dict = erlt_starts_obj.get_txled_for_db_district_year()
