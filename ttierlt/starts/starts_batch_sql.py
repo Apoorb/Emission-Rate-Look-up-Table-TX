@@ -51,7 +51,7 @@ def create_starts_table_in_db(delete_if_exists=False):
             `ETYB` DECIMAL(23,19) NULL DEFAULT NULL,
             `DPM` DECIMAL(23,19) NULL DEFAULT NULL,
             `POM` DECIMAL(23,19) NULL DEFAULT NULL,
-            CONSTRAINT running_erlt_intermediate_pk PRIMARY KEY (Area, yearid, monthid, vehicletype, fueltype)
+            CONSTRAINT starts_erlt_intermediate_pk PRIMARY KEY (Area, yearid, monthid, vehicletype, fueltype)
         )
         COLLATE='utf8_unicode_ci'
         ENGINE=MyISAM;
@@ -67,7 +67,6 @@ class StartSqlCmds(MovesDb):
 
     def __init__(self, db_nm_):
         super().__init__(db_nm_=db_nm_)
-        self.moves2014b_db_nm = "movesdb20181022"
         self.fueltypedict = {1: "Gasoline", 2: "Diesel"}
         self.head_startrate_df = pd.DataFrame()
         self.hourmix_starts = pd.DataFrame()
@@ -224,9 +223,12 @@ class StartSqlCmds(MovesDb):
             )
             self.cur.execute(
                 """
-            CREATE INDEX IF NOT EXISTS hrmixdx1 ON hourmix_starts (hourID, sourcetypeid, fueltypeid);"""
+            CREATE INDEX IF NOT EXISTS hrmix_stdx1 ON hourmix_starts (hourID, sourcetypeid, fueltypeid);"""
             )
             if self.use_txled:
+                self.cur.execute(
+                    """CREATE INDEX IF NOT EXISTS  stridx2 ON startrate (pollutantid, sourcetypeid, fueltypeid);"""
+                )
                 self.cur.execute(
                     f"""
                     CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.analysis_year} 
@@ -292,7 +294,6 @@ class StartSqlCmds(MovesDb):
             "---join_startrate_txled_hourmix execution time:  %s seconds---"
             % (time.time() - start_time)
         )
-        pass
 
     def compute_factored_startrate(self):
         """Weight the emission rate by time of day starts distribution and TxLED factor for counties where TxLED program
