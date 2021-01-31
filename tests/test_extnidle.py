@@ -27,8 +27,12 @@ POLLUTANT_COLS = [
     "DPM",
     "POM",
 ]
-PROCESSTYPE = ["Extnd_Exhaust", "APU"]
-
+PROCESSTYPES = ["Extnd_Exhaust", "APU"]
+DISTRICTS_ALL = ["El Paso", "Austin","Corpus Christi" ,"Beaumont", "Dallas", "Fort Worth", "Houston", "Waco", "San Antonio"]
+DISTRICTS_PRCSD = ["El Paso"]
+EXTNDIDLE_OUTPUT_DATASETS = [
+    "extnidle_erlt_intermediate",
+    "extnidle_erlt_intermediate_yr_interpolated_no_monthid"]
 
 @pytest.fixture(scope="session")
 def get_erlt_extnidle_2014b_data_py(request):
@@ -43,6 +47,7 @@ def get_erlt_extnidle_2014b_data_py(request):
 
 @pytest.fixture(scope="session")
 def get_qaqc_tables_created_from_sql():
+    """QAQC tables are created by running the original SQL scripts created independently of the python code."""
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_qaqc")
     cur = conn.cursor()
     cur.execute(" SHOW TABLES")
@@ -103,18 +108,18 @@ def get_py_sql_df_list(
             {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
             {"grp_key": ("El Paso", 2020, 1)},
         ),
-        # (
-        #     {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
-        #     {"grp_key": ("El Paso", 2022, 7)},
-        # ),
-        # (
-        #     {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
-        #     {"grp_key": ("El Paso", 2024, 10)},
-        # ),
-        # (
-        #     {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
-        #     {"grp_key": ("El Paso", 2044, 4)},
-        # ),
+        (
+            {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
+            {"grp_key": ("El Paso", 2022, 7)},
+        ),
+        (
+            {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
+            {"grp_key": ("El Paso", 2024, 10)},
+        ),
+        (
+            {"data": "extnidle_erlt_intermediate", "fil_county": ["El Paso"]},
+            {"grp_key": ("El Paso", 2044, 4)},
+        ),
         (
             {"data": "extnidle_erlt_intermediate", "fil_county": ["Austin"]},
             {"grp_key": ("Austin", 2020, 1)},
@@ -122,9 +127,9 @@ def get_py_sql_df_list(
     ],
     ids=[
         "_".join(map(str, ("El Paso", 2020, 1))),
-        # "_".join(map(str, ("El Paso", 2022, 7))),
-        # "_".join(map(str, ("El Paso", 2024, 10))),
-        # "_".join(map(str, ("El Paso", 2044, 4))),
+        "_".join(map(str, ("El Paso", 2022, 7))),
+        "_".join(map(str, ("El Paso", 2024, 10))),
+        "_".join(map(str, ("El Paso", 2044, 4))),
         "_".join(map(str, ("Austin", 2020, 1))),
     ],
     indirect=True,
@@ -137,3 +142,106 @@ def test_final_starts_erlt_matches_between_py_sql_v1(
         get_py_sql_df_list["py_erlt_df_fil"],
         get_py_sql_df_list["sql_erlt_df_fil"],
     )
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py",
+    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_groups_by_area_year_rdtype_in_erlt_2014b_data(
+    get_erlt_extnidle_2014b_data_py,
+):
+    assert get_erlt_extnidle_2014b_data_py.groupby(["Area", "yearid"]).ngroups == 16
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py",
+    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_yearid(get_erlt_extnidle_2014b_data_py):
+    assert all(
+        get_erlt_extnidle_2014b_data_py.groupby(
+            ["Area", "monthid", "Processtype"]
+        ).yearid.count()
+        == 16
+    )
+    assert all(
+        get_erlt_extnidle_2014b_data_py.groupby(
+            ["Area", "monthid", "Processtype"]
+        ).yearid.nunique()
+        == 16
+    )
+    assert set(range(2020, 2052, 2)) == set(get_erlt_extnidle_2014b_data_py.yearid)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py",
+    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_monthid(get_erlt_extnidle_2014b_data_py):
+    assert all(
+        get_erlt_extnidle_2014b_data_py.groupby(
+            ["Area", "yearid", "Processtype"]
+        ).monthid.count()
+        == 4
+    )
+    assert all(
+        get_erlt_extnidle_2014b_data_py.groupby(
+            ["Area", "yearid", "Processtype"]
+        ).monthid.nunique()
+        == 4
+    )
+    assert set([1, 4, 7, 10]) == set(get_erlt_extnidle_2014b_data_py.monthid)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py",
+    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_processtypes(get_erlt_extnidle_2014b_data_py):
+    assert all(
+        get_erlt_extnidle_2014b_data_py.groupby(
+            ["Area", "yearid", "monthid"]
+        ).Processtype.nunique()
+        == 2
+    )
+    assert set(PROCESSTYPES) == set(get_erlt_extnidle_2014b_data_py.Processtype)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py, quantile_unique",
+    [({"data": data, "fil_county": [district]}, 1) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
+    ids=["--".join([data, district]) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
+    indirect=["get_erlt_extnidle_2014b_data_py"],
+)
+def test_unique_values_percent_unique_pollutants(
+    get_erlt_extnidle_2014b_data_py, quantile_unique
+):
+    num_unique_emmision_rates_pollutants = (
+        get_erlt_extnidle_2014b_data_py[POLLUTANT_COLS].nunique().values
+    )
+    no_na_values = not any(np.ravel(get_erlt_extnidle_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_extnidle_2014b_data_py)) > 0
+    assert no_empty_datasets
+    assert no_na_values
+    assert np.quantile(num_unique_emmision_rates_pollutants, quantile_unique) == len(
+        get_erlt_extnidle_2014b_data_py
+    )
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py, min_val",
+    [({"data": data, "fil_county": [district]}, 1) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
+    ids=["--".join([data, district]) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
+    indirect=["get_erlt_extnidle_2014b_data_py"],
+)
+def test_min_values_over_zero_pollutants(get_erlt_extnidle_2014b_data_py, min_val):
+    assert all(get_erlt_extnidle_2014b_data_py[POLLUTANT_COLS].min() >= 0)
