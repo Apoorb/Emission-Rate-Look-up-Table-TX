@@ -27,6 +27,12 @@ POLLUTANT_COLS = [
     "DPM",
     "POM",
 ]
+DISTRICTS_ALL = ["El Paso", "Austin","Corpus Christi" ,"Beaumont", "Dallas", "Fort Worth", "Houston", "Waco", "San Antonio"]
+DISTRICTS_PRCSD = ["El Paso", "Austin"]
+RUNNING_OUTPUT_DATASETS = [
+    "running_erlt_intermediate",
+    "running_erlt_intermediate_yr_interpolated",
+    "running_erlt_intermediate_yr_spd_interpolated_no_monthid"]
 
 
 @pytest.fixture(scope="session")
@@ -42,6 +48,9 @@ def get_erlt_running_2014b_data_py(request):
 
 @pytest.fixture(scope="session")
 def get_qaqc_tables_created_from_sql():
+    """
+    QAQC tables are created by running the original SQL scripts created independently of the python code.
+    """
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_qaqc")
     cur = conn.cursor()
     cur.execute(" SHOW TABLES")
@@ -140,7 +149,8 @@ def test_final_running_erlt_matches_between_py_sql_v1(
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py",
-    [{"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}],
+    [{"data": "running_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_unique_groups_by_area_year_rdtype_in_erlt_2014b_data(
@@ -154,7 +164,8 @@ def test_unique_groups_by_area_year_rdtype_in_erlt_2014b_data(
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py",
-    [{"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}],
+    [{"data": "running_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_unique_avg_speed_2_5_to_75(get_erlt_running_2014b_data_py):
@@ -177,7 +188,8 @@ def test_unique_avg_speed_2_5_to_75(get_erlt_running_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py",
-    [{"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}],
+    [{"data": "running_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_unique_funclass(get_erlt_running_2014b_data_py):
@@ -203,7 +215,8 @@ def test_unique_funclass(get_erlt_running_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py",
-    [{"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}],
+    [{"data": "running_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_unique_yearid(get_erlt_running_2014b_data_py):
@@ -224,7 +237,8 @@ def test_unique_yearid(get_erlt_running_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py",
-    [{"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}],
+    [{"data": "running_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_unique_monthid(get_erlt_running_2014b_data_py):
@@ -245,28 +259,8 @@ def test_unique_monthid(get_erlt_running_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py, quantile_unique",
-    [
-        ({"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}, 1),
-        (
-            {
-                "data": "running_erlt_intermediate_yr_interpolated",
-                "fil_county": ["El Paso"],
-            },
-            1,
-        ),
-        (
-            {
-                "data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
-                "fil_county": ["El Paso"],
-            },
-            1,
-        ),
-    ],
-    ids=[
-        "running_erlt_intermediate",
-        "running_erlt_intermediate_yr_interpolated",
-        "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
-    ],
+    [({"data": data, "fil_county": [district]}, 1) for district in DISTRICTS_ALL for data in RUNNING_OUTPUT_DATASETS],
+    ids=["--".join([data, district]) for district in DISTRICTS_ALL for data in RUNNING_OUTPUT_DATASETS],
     indirect=["get_erlt_running_2014b_data_py"],
 )
 def test_unique_values_percent_unique_pollutants(
@@ -276,6 +270,8 @@ def test_unique_values_percent_unique_pollutants(
         get_erlt_running_2014b_data_py[POLLUTANT_COLS].nunique().values
     )
     no_na_values = not any(np.ravel(get_erlt_running_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_running_2014b_data_py)) > 0
+    assert no_empty_datasets
     assert no_na_values
     assert np.quantile(num_unique_emmision_rates_pollutants, quantile_unique) == len(
         get_erlt_running_2014b_data_py
@@ -284,28 +280,8 @@ def test_unique_values_percent_unique_pollutants(
 
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py, min_val",
-    [
-        ({"data": "running_erlt_intermediate", "fil_county": ["El Paso"]}, 0),
-        (
-            {
-                "data": "running_erlt_intermediate_yr_interpolated",
-                "fil_county": ["El Paso"],
-            },
-            0,
-        ),
-        (
-            {
-                "data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
-                "fil_county": ["El Paso"],
-            },
-            0,
-        ),
-    ],
-    ids=[
-        "running_erlt_intermediate",
-        "running_erlt_intermediate_yr_interpolated",
-        "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
-    ],
+    [({"data": data, "fil_county": [district]}, 1) for district in DISTRICTS_PRCSD for data in RUNNING_OUTPUT_DATASETS],
+    ids=["--".join([data, district]) for district in DISTRICTS_PRCSD for data in RUNNING_OUTPUT_DATASETS],
     indirect=["get_erlt_running_2014b_data_py"],
 )
 def test_min_values_over_zero_pollutants(get_erlt_running_2014b_data_py, min_val):
