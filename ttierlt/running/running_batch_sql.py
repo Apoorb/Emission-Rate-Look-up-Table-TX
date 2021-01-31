@@ -239,9 +239,6 @@ class RunningSqlCmds(MovesDb):
                 """CREATE INDEX IF NOT EXISTS  efidx2 ON emisrate (hourid);"""
             )
             self.cur.execute(
-                """CREATE INDEX IF NOT EXISTS  efidx3 ON emisrate (pollutantid, sourcetypeid, fueltypeid);"""
-            )
-            self.cur.execute(
                 f"""CREATE INDEX IF NOT EXISTS  houridx1 ON hourmix_running_{self.district_abb} (TOD);"""
             )
             self.cur.execute(
@@ -249,6 +246,9 @@ class RunningSqlCmds(MovesDb):
                 (Period, MOVES_STcode, MOVES_FTcode, VMX_RDcode);"""
             )
             if self.use_txled:
+                self.cur.execute(
+                    """CREATE INDEX IF NOT EXISTS  efidx3 ON emisrate (pollutantid, sourcetypeid, fueltypeid);"""
+                )
                 self.cur.execute(
                     f"""
                     CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.analysis_year}
