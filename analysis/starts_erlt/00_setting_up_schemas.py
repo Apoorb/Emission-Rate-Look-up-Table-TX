@@ -17,7 +17,7 @@ create_qaqc_output_conflicted_schema()
 
 # Delete the existing output table. It cannot have duplicated data; will raise error if you try to add
 # duplicated data.
-delete_if_exists = False
+delete_if_exists = True
 if delete_if_exists:
     delete_if_exists_user_input = input(
         "Do you want to loose the data from previous runs and create a fresh starts_erlt_intermediate table?(y/n)"

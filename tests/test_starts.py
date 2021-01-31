@@ -1,5 +1,5 @@
 """
-Tests to QAQC data processing from 02_batch_run_running.py.
+Tests to QAQC data processing from 01_batch_run_starts.py.
 """
 import pytest
 import re
