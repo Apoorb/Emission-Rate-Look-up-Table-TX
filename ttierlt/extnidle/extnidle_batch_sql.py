@@ -289,8 +289,9 @@ class ExtnidleSqlCmds(MovesDb):
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
                 ACTE, ACROL, ETYB, DPM, POM)
         """
-        cmd_create_conflicted = f"""
-             CREATE TABLE mvs2014b_erlt_conflicted.extnidle_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}"""
+        cmd_create_conflicted = (f"CREATE TABLE mvs2014b_erlt_conflicted.extnidle"
+                                 f"_{self.district_abb}_{self.analysis_year}_"
+                                 f"{self.anaylsis_month}_{conflicted_copy_suffix}")
         cmd_common = """
             SELECT Area, yearid, monthid, Processtype,
             SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
@@ -321,14 +322,15 @@ class ExtnidleSqlCmds(MovesDb):
                 self.cur.execute(cmd_insert_agg)
             else:
                 print(
-                    f"Saving starts emission rate for {self.district_abb}, {self.analysis_year}, "
+                    f"Saving starts emission rate for {self.district_abb}, "
+                    f"{self.analysis_year}, "
                     f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review."
                 )
                 cmd_create_agg = cmd_create_conflicted + cmd_common
                 self.cur.execute(
-                    f"""
-                    DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.extnidle_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix};
-                """
+                    f"DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.extnidle"
+                    f"_{self.district_abb}_{self.analysis_year}"
+                    f"_{self.anaylsis_month}_{conflicted_copy_suffix};"
                 )
                 self.cur.execute(cmd_create_agg)
             print(

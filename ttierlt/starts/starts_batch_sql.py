@@ -51,7 +51,8 @@ def create_starts_table_in_db(delete_if_exists=False):
             `ETYB` DECIMAL(23,19) NULL DEFAULT NULL,
             `DPM` DECIMAL(23,19) NULL DEFAULT NULL,
             `POM` DECIMAL(23,19) NULL DEFAULT NULL,
-            CONSTRAINT starts_erlt_intermediate_pk PRIMARY KEY (Area, yearid, monthid, vehicletype, fueltype)
+            CONSTRAINT starts_erlt_intermediate_pk PRIMARY KEY (Area, yearid, monthid, 
+            vehicletype, fueltype)
         )
         COLLATE='utf8_unicode_ci'
         ENGINE=MyISAM;
@@ -330,9 +331,9 @@ class StartSqlCmds(MovesDb):
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
                 ACTE, ACROL, ETYB, DPM, POM)
         """
-        cmd_create_conflicted = f"""
-             CREATE TABLE mvs2014b_erlt_conflicted.starts_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}
-        """
+        cmd_create_conflicted = (f"CREATE TABLE mvs2014b_erlt_conflicted.starts"
+                                 f"_{self.district_abb}_{self.analysis_year}_"
+                                 f"{self.anaylsis_month}_{conflicted_copy_suffix}")
         cmd_common = """
             SELECT Area,yearid,monthid,VehicleType,FUELTYPE,
             SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
@@ -363,14 +364,15 @@ class StartSqlCmds(MovesDb):
                 self.cur.execute(cmd_insert_agg)
             else:
                 print(
-                    f"Saving starts emission rate for {self.district_abb}, {self.analysis_year}, "
+                    f"Saving starts emission rate for {self.district_abb}, "
+                    f"{self.analysis_year}, "
                     f"{self.anaylsis_month} in mvs2014b_erlt_conflicted for review."
                 )
                 cmd_create_agg = cmd_create_conflicted + cmd_common
                 self.cur.execute(
-                    f"""
-                    DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.starts_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix};
-                """
+                    f"DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.starts"
+                    f"_{self.district_abb}_{self.analysis_year}"
+                    f"_{self.anaylsis_month}_{conflicted_copy_suffix};"
                 )
                 self.cur.execute(cmd_create_agg)
             print(

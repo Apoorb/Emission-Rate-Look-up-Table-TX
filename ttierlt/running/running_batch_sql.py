@@ -219,17 +219,20 @@ class RunningSqlCmds(MovesDb):
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(
-            f"DROP TABLE  IF EXISTS vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix};"
+            f"""DROP TABLE  
+            IF EXISTS vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix};"""
         )
         self.cur.execute(
             f"""
             CREATE TABLE vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix} 
             SELECT * FROM vmtmix_fy20.todmix 
-            WHERE TxDOT_Dist = @analysis_district and Daytype = "Weekday" and YearID =  @analysis_year_todmix;
+            WHERE TxDOT_Dist = @analysis_district 
+            AND Daytype = "Weekday" AND YearID =  @analysis_year_todmix;
             """
         )
         self.vmtmix = pd.read_sql(
-            f"SELECT * FROM  vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix} ",
+            f"""SELECT * 
+            FROM  vmtmix_weekday_{self.district_abb}_{self.analysis_year_todmix}""",
             self.conn,
         )
         self.test_todmix_df_is_read()
@@ -370,9 +373,9 @@ class RunningSqlCmds(MovesDb):
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
                 ACTE, ACROL, ETYB, DPM, POM)
         """
-        cmd_create_conflicted = f"""
-             CREATE TABLE mvs2014b_erlt_conflicted.running_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}
-        """
+        cmd_create_conflicted = (f"CREATE TABLE mvs2014b_erlt_conflicted.running"
+                                 f"_{self.district_abb}_{self.analysis_year}_"
+                                 f"{self.anaylsis_month}_{conflicted_copy_suffix}")
         cmd_common = """
                 SELECT Area,yearid,monthid,funclass,avgspeed,
                 SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
@@ -409,9 +412,9 @@ class RunningSqlCmds(MovesDb):
                 )
                 cmd_create_agg = cmd_create_conflicted + cmd_common
                 self.cur.execute(
-                    f"""
-                    DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.running_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix};
-                """
+                    f"DROP TABLE IF EXISTS mvs2014b_erlt_conflicted.running"
+                    f"_{self.district_abb}_{self.analysis_year}"
+                    f"_{self.anaylsis_month}_{conflicted_copy_suffix};"
                 )
                 self.cur.execute(cmd_create_agg)
             print(
