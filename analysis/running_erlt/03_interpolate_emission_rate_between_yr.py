@@ -13,6 +13,8 @@ from ttierlt.utils import (
     PATH_INTERIM_RUNNING,
 )
 
+# TODO: Create a module based on the code before and use in for all the processes.
+
 YEAR_LIST = np.arange(2020, 2051, 1)
 # Pollutant columns ['CO', 'NOX', 'SO2', 'NO2', 'VOC', 'CO2EQ', 'PM10', 'PM25', 'BENZ', 'NAPTH', 'BUTA', 'FORM', 'ACTE',
 # 'ACROL', 'ETYB', 'DPM', 'POM']

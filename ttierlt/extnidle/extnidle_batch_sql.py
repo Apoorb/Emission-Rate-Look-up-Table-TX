@@ -25,7 +25,9 @@ def create_extnidle_table_in_db(delete_if_exists=False):
     conn = connect_to_server_db(database_nm=None)
     cur = conn.cursor()
     if delete_if_exists:
-        cur.execute("DROP TABLE  IF EXISTS mvs2014b_erlt_out.extnidle_erlt_intermediate")
+        cur.execute(
+            "DROP TABLE  IF EXISTS mvs2014b_erlt_out.extnidle_erlt_intermediate"
+        )
     cur.execute(
         """
         CREATE TABLE mvs2014b_erlt_out.extnidle_erlt_intermediate (
@@ -123,23 +125,30 @@ class ExtnidleSqlCmds(MovesDb):
         Function to add necessary fields to the rate table and populate it with apprropriate data.
         """
         self.cur.execute("FLUSH TABLES;")
-        self.cur.execute("""
+        self.cur.execute(
+            """
             ALTER TABLE Extnidlerate
             ADD COLUMN Hourmix float,
             ADD COLUMN Area char(25),
             ADD COLUMN Processtype char(25),
             ADD COLUMN txledfac float(6),
             ADD COLUMN emisFact float;
-        """)
+        """
+        )
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("""Update Extnidlerate SET Area = @analysis_district;""")
-        self.cur.execute("UPDATE Extnidlerate SET Processtype = 'Extnd_Exhaust' WHERE Processid in (17,90);")
-        self.cur.execute("UPDATE Extnidlerate SET Processtype = 'APU' WHERE Processid = 91;")
+        self.cur.execute(
+            "UPDATE Extnidlerate SET Processtype = 'Extnd_Exhaust' WHERE Processid in (17,90);"
+        )
+        self.cur.execute(
+            "UPDATE Extnidlerate SET Processtype = 'APU' WHERE Processid = 91;"
+        )
 
     def get_hourmix_extidle(self):
         """
         -- Function creates the hour-mix table from the MOVES default database
-        -- Note that default databse need to be present in order to execute this query
+        -- Note that default databse need to be present in order to execute
+        this  query
         -- If MOVES model version is updated by EPA, MOVES default schema referenced here need to be changed
         Returns
         -------
@@ -147,13 +156,15 @@ class ExtnidleSqlCmds(MovesDb):
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("DROP TABLE  IF EXISTS hourmix_extidle;")
-        self.cur.execute(f"""
+        self.cur.execute(
+            f"""
             CREATE TABLE hourmix_extidle
             SELECT a.hourID,b.hotellingdist from {self.moves2014b_db_nm}.hourday a
             JOIN {self.moves2014b_db_nm}.sourcetypehour b on 
             a.hourdayid = b.hourdayid
             where a.dayid = '5';
-        """)
+        """
+        )
         self.hourmix_extidle = pd.read_sql(f"SELECT * FROM hourmix_extidle", self.conn)
         self.test_hourmix_extidle()
         return self.hourmix_extidle
@@ -188,14 +199,16 @@ class ExtnidleSqlCmds(MovesDb):
         except mariadb.ProgrammingError as mdberr:
             print(mdberr)
             print(
-                "Run aggregate_extnidlerate_rateperhour, get_hourmix_extidle,  get_txled_for_db_district_year functions"
+                "Run aggregate_extnidlerate_rateperhour, get_hourmix_extidle, "
+                "get_txled_for_db_district_year functions"
                 "before creating indices."
             )
             raise
 
     def join_extnidlerate_txled_hourmix(self):
         """
-        Join hotelling distribution and TxLED emission reduction factors to the Extnidlerate table.
+        Join hotelling distribution and TxLED emission reduction factors to the
+        Extnidlerate table.
         """
         start_time = time.time()
         if self.created_all_indices:
@@ -243,11 +256,16 @@ class ExtnidleSqlCmds(MovesDb):
         )
 
     def compute_factored_extnidlerate(self):
-        """Weight the emission rate by time of day hotelling distribution and TxLED factor for counties where TxLED
+        """Weight the emission rate by time of day hotelling distribution and
+        TxLED factor for counties where TxLED
         program is active in a county (or majority of county of a district.)"""
-        self.cur.execute("""UPDATE Extnidlerate SET emisFact = rateperhour*HourMix*txledfac;""")
+        self.cur.execute(
+            """UPDATE Extnidlerate SET emisFact = rateperhour*HourMix*txledfac;"""
+        )
 
-    def agg_by_processtype(self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""):
+    def agg_by_processtype(
+        self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""
+    ):
         """
         Aggregate (sum) emission rate by yearid, monthid, Processtype. Insert the aggregated table
         to mvs2014b_erlt_out.extnidle_erlt_intermediate if no duplicate exists. Alternatively, save a conflicted copy
@@ -311,11 +329,13 @@ class ExtnidleSqlCmds(MovesDb):
         except mariadb.IntegrityError as integerityrr:
             print(integerityrr)
             print(
-                "Re-create the mvs2014b_erlt_out.extnidle_erlt_intermediate table if you want to overwrite it."
+                "Re-create the mvs2014b_erlt_out.extnidle_erlt_intermediate "
+                "table if you want to overwrite it."
             )
             print(
-                f"Cannot write over the data in mvs2014b_erlt_out.extnidle_erlt_intermediate. Drop the rows you are"
-                f"trying to overwrite"
+                f"Cannot write over the data in "
+                f"mvs2014b_erlt_out.extnidle_erlt_intermediate. Drop the rows "
+                f"you are trying to overwrite"
             )
             raise
         except mariadb.ProgrammingError as programmingerr:

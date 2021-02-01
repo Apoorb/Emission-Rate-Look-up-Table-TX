@@ -28,11 +28,23 @@ POLLUTANT_COLS = [
     "POM",
 ]
 PROCESSTYPES = ["Extnd_Exhaust", "APU"]
-DISTRICTS_ALL = ["El Paso", "Austin","Corpus Christi" ,"Beaumont", "Dallas", "Fort Worth", "Houston", "Waco", "San Antonio"]
+DISTRICTS_ALL = [
+    "El Paso",
+    "Austin",
+    "Corpus Christi",
+    "Beaumont",
+    "Dallas",
+    "Fort Worth",
+    "Houston",
+    "Waco",
+    "San Antonio",
+]
 DISTRICTS_PRCSD = ["El Paso"]
 EXTNDIDLE_OUTPUT_DATASETS = [
     "extnidle_erlt_intermediate",
-    "extnidle_erlt_intermediate_yr_interpolated_no_monthid"]
+    "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
+]
+
 
 @pytest.fixture(scope="session")
 def get_erlt_extnidle_2014b_data_py(request):
@@ -146,7 +158,10 @@ def test_final_starts_erlt_matches_between_py_sql_v1(
 
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py",
-    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    [
+        {"data": "extnidle_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
@@ -158,7 +173,10 @@ def test_unique_groups_by_area_year_rdtype_in_erlt_2014b_data(
 
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py",
-    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    [
+        {"data": "extnidle_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
@@ -180,7 +198,10 @@ def test_unique_yearid(get_erlt_extnidle_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py",
-    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    [
+        {"data": "extnidle_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
@@ -202,7 +223,10 @@ def test_unique_monthid(get_erlt_extnidle_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py",
-    [{"data": "extnidle_erlt_intermediate", "fil_county": [district]} for district in DISTRICTS_PRCSD],
+    [
+        {"data": "extnidle_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
@@ -218,8 +242,16 @@ def test_unique_processtypes(get_erlt_extnidle_2014b_data_py):
 
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py, quantile_unique",
-    [({"data": data, "fil_county": [district]}, 1) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
-    ids=["--".join([data, district]) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
+    [
+        ({"data": data, "fil_county": [district]}, 1)
+        for district in DISTRICTS_ALL
+        for data in EXTNDIDLE_OUTPUT_DATASETS
+    ],
+    ids=[
+        "--".join([data, district])
+        for district in DISTRICTS_ALL
+        for data in EXTNDIDLE_OUTPUT_DATASETS
+    ],
     indirect=["get_erlt_extnidle_2014b_data_py"],
 )
 def test_unique_values_percent_unique_pollutants(
@@ -239,8 +271,16 @@ def test_unique_values_percent_unique_pollutants(
 
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py, min_val",
-    [({"data": data, "fil_county": [district]}, 1) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
-    ids=["--".join([data, district]) for district in DISTRICTS_ALL for data in EXTNDIDLE_OUTPUT_DATASETS],
+    [
+        ({"data": data, "fil_county": [district]}, 1)
+        for district in DISTRICTS_ALL
+        for data in EXTNDIDLE_OUTPUT_DATASETS
+    ],
+    ids=[
+        "--".join([data, district])
+        for district in DISTRICTS_ALL
+        for data in EXTNDIDLE_OUTPUT_DATASETS
+    ],
     indirect=["get_erlt_extnidle_2014b_data_py"],
 )
 def test_min_values_over_zero_pollutants(get_erlt_extnidle_2014b_data_py, min_val):

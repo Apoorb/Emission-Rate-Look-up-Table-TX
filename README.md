@@ -1,13 +1,13 @@
 Emission-Rate-Look-up-Table-TX
 ==============================
 
-Batch process MOVES output files to get condensed emission rate look-up tables by district, year, road type, speed, and pollutants.
+Batch process MOVES output files to get condensed emission rate look-up tables for different districts and years.
+Get emission four different processes: running, starts, extended idling, and idling.
 
 Project Organization
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
     │   ├── external       <- Data from third party sources.
