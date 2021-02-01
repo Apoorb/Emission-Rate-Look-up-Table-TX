@@ -91,7 +91,6 @@ class RunningSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE  IF EXISTS emisrate;")
-        self.cur.execute(f"DROP TABLE  IF EXISTS {self.db_nm}.emisrate;")
         self.cur.execute(
             f"""
             CREATE TABLE emisrate (SELECT yearid,monthid,hourid,
@@ -169,7 +168,7 @@ class RunningSqlCmds(MovesDb):
             """
             self.cur.execute(cmd_period_hourid)
 
-    def get_hourmix_for_db_district(self):
+    def get_hourmix(self):
         """
         Script creates the hour-mix table from the MOVES database.table
         vmtmix_fy20.todmix.
@@ -203,7 +202,7 @@ class RunningSqlCmds(MovesDb):
             "present in District column of vmtmix_fy20.hourmix"
         )
 
-    def get_vmtmix_for_db_district_weekday_closest_vmt_yr(self):
+    def get_vmtmix(self):
         """
         Script creates the VMT-mix table from the movesactivity output table available
         in the MOVES output databse used for rate development. The input table is
@@ -451,12 +450,12 @@ if __name__ == "__main__":
     logging.info(f"# Start processing {db_nm}")
     elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm)
     query_start_time = time.time()
-    # elp_2022_7_obj.aggregate_emisrate_rateperdist()
-    # hourmix_elp = elp_2022_7_obj.get_hourmix_for_db_district()
+    elp_2022_7_obj.aggregate_emisrate_rateperdist()
+    hourmix_elp = elp_2022_7_obj.get_hourmix()
     vmt_mix_elp_2022 = (
-        elp_2022_7_obj.get_vmtmix_for_db_district_weekday_closest_vmt_yr()
+        elp_2022_7_obj.get_vmtmix()
     )
-    txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
+    txled_elp_dict = elp_2022_7_obj.get_txled()
     elp_2022_7_obj.create_indices_before_joins()
     elp_2022_7_obj.join_emisrate_vmt_tod_txled()
     elp_2022_7_obj.compute_factored_emisrate()

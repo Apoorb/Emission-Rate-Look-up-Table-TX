@@ -8,7 +8,6 @@ import pandas as pd
 import mariadb
 import os
 import numpy as np
-import datetime
 import logging
 from ttierlt.movesdb import MovesDb
 from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_STARTS
@@ -414,7 +413,7 @@ if __name__ == "__main__":
     TESTING_TXLED = True
     if TESTING_TXLED:
         elp_2022_7_obj.use_txled = True
-    txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
+    txled_elp_dict = elp_2022_7_obj.get_txled()
     elp_2022_7_obj.create_indices_before_joins()
     elp_2022_7_obj.join_startrate_txled_hourmix()
     elp_2022_7_obj.compute_factored_startrate()
