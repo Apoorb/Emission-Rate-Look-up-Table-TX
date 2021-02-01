@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from ttierlt.utils import connect_to_server_db
 
+PERIODIDS = ["AM", "MD", "PM", "ON"]
 MONTHIDS = [1, 4, 7, 10]
 POLLUTANT_COLS = [
     "CO",
@@ -38,8 +39,8 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = ["El Paso", "Austin"]
-STARTS_OUTPUT_DATASETS = [
+DISTRICTS_PRCSD = ["El Paso"]
+IDLING_OUTPUT_DATASETS = [
     "idling_erlt_intermediate",
     "idling_erlt_intermediate_yr_interpolated_no_monthid",
 ]
@@ -81,10 +82,10 @@ def get_py_sql_df_list(
     get_erlt_idling_2014b_data_py, get_qaqc_tables_created_from_sql, request
 ):
     group_area_yearid_monthid_py = get_erlt_idling_2014b_data_py.groupby(
-        ["Area", "yearid", "monthid"]
+        ["Area", "yearid"]
     )
     group_area_yearid_monthid_sql = get_qaqc_tables_created_from_sql.groupby(
-        ["Area", "yearid", "monthid"]
+        ["Area", "yearid"]
     )
     try:
         py_erlt_df_fil = group_area_yearid_monthid_py.get_group(
@@ -120,31 +121,31 @@ def get_py_sql_df_list(
     [
         (
             {"data": "idling_erlt_intermediate", "fil_county": ["El Paso"]},
-            {"grp_key": ("El Paso", 2020, 1)},
+            {"grp_key": ("El Paso", 2020)},
         ),
-        # (
-        #     {"data": "starts_erlt_intermediate", "fil_county": ["El Paso"]},
-        #     {"grp_key": ("El Paso", 2022, 7)},
-        # ),
-        # (
-        #     {"data": "starts_erlt_intermediate", "fil_county": ["El Paso"]},
-        #     {"grp_key": ("El Paso", 2024, 10)},
-        # ),
-        # (
-        #     {"data": "starts_erlt_intermediate", "fil_county": ["El Paso"]},
-        #     {"grp_key": ("El Paso", 2044, 4)},
-        # ),
-        # (
-        #     {"data": "starts_erlt_intermediate", "fil_county": ["Austin"]},
-        #     {"grp_key": ("Austin", 2020, 1)},
-        # ),
+        (
+            {"data": "idling_erlt_intermediate", "fil_county": ["El Paso"]},
+            {"grp_key": ("El Paso", 2022)},
+        ),
+        (
+            {"data": "idling_erlt_intermediate", "fil_county": ["El Paso"]},
+            {"grp_key": ("El Paso", 2024)},
+        ),
+        (
+            {"data": "idling_erlt_intermediate", "fil_county": ["El Paso"]},
+            {"grp_key": ("El Paso", 2044)},
+        ),
+        (
+            {"data": "idling_erlt_intermediate", "fil_county": ["Austin"]},
+            {"grp_key": ("Austin", 2020)},
+        ),
     ],
     ids=[
-        "_".join(map(str, ("El Paso", 2020, 1))),
-        # "_".join(map(str, ("El Paso", 2022, 7))),
-        # "_".join(map(str, ("El Paso", 2024, 10))),
-        # "_".join(map(str, ("El Paso", 2044, 4))),
-        # "_".join(map(str, ("Austin", 2020, 1))),
+        "_".join(map(str, ("El Paso", 2020))),
+        "_".join(map(str, ("El Paso", 2022))),
+        "_".join(map(str, ("El Paso", 2024))),
+        "_".join(map(str, ("El Paso", 2044))),
+        "_".join(map(str, ("Austin", 2020))),
     ],
     indirect=True,
 )
@@ -156,3 +157,141 @@ def test_final_idling_erlt_matches_between_py_sql_v1(
         get_py_sql_df_list["py_erlt_df_fil"],
         get_py_sql_df_list["sql_erlt_df_fil"],
     )
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py",
+    [
+        {"data": "idling_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_groups_by_area_year_rdtype_in_erlt_2014b_data(
+    get_erlt_idling_2014b_data_py,
+):
+    assert get_erlt_idling_2014b_data_py.groupby(["Area", "yearid"]).ngroups == 16
+    # 4 months * 4 periods
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py",
+    [
+        {"data": "idling_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_yearid(get_erlt_idling_2014b_data_py):
+    assert all(
+        get_erlt_idling_2014b_data_py.groupby(
+            ["Area", "monthid", "period"]
+        ).yearid.count()
+        == 16
+    )
+    assert all(
+        get_erlt_idling_2014b_data_py.groupby(
+            ["Area", "monthid", "period"]
+        ).yearid.nunique()
+        == 16
+    )
+    assert set(range(2020, 2052, 2)) == set(get_erlt_idling_2014b_data_py.yearid)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py",
+    [
+        {"data": "idling_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_monthid(get_erlt_idling_2014b_data_py):
+    assert all(
+        get_erlt_idling_2014b_data_py.groupby(
+            ["Area", "yearid", "period"]
+        ).monthid.count()
+        == 4
+    )
+    assert all(
+        get_erlt_idling_2014b_data_py.groupby(
+            ["Area", "yearid", "period"]
+        ).monthid.nunique()
+        == 4
+    )
+    assert set([1, 4, 7, 10]) == set(get_erlt_idling_2014b_data_py.monthid)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py",
+    [
+        {"data": "idling_erlt_intermediate", "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_unique_periods(get_erlt_idling_2014b_data_py):
+    assert all(
+        get_erlt_idling_2014b_data_py.groupby(
+            ["Area", "yearid", "monthid"]
+        ).period.count()
+        == 4
+    )
+    assert all(
+        get_erlt_idling_2014b_data_py.groupby(
+            ["Area", "yearid", "monthid"]
+        ).period.nunique()
+        == 4
+    )
+    assert set(PERIODIDS) == set(get_erlt_idling_2014b_data_py.period)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py, quantile_unique",
+    [
+        ({"data": data, "fil_county": [district]}, 1)
+        for district in DISTRICTS_ALL
+        for data in IDLING_OUTPUT_DATASETS
+    ],
+    ids=[
+        "--".join([data, district])
+        for district in DISTRICTS_ALL
+        for data in IDLING_OUTPUT_DATASETS
+    ],
+    indirect=["get_erlt_idling_2014b_data_py"],
+)
+def test_unique_values_percent_unique_pollutants(
+    get_erlt_idling_2014b_data_py, quantile_unique
+):
+    num_unique_emmision_rates_pollutants = (
+        get_erlt_idling_2014b_data_py[POLLUTANT_COLS].nunique().values
+    )
+    no_na_values = not any(np.ravel(get_erlt_idling_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_idling_2014b_data_py)) > 0
+    assert no_empty_datasets
+    assert no_na_values
+    assert np.quantile(num_unique_emmision_rates_pollutants, quantile_unique) == len(
+        get_erlt_idling_2014b_data_py
+    )
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py, min_val",
+    [
+        ({"data": data, "fil_county": [district]}, 1)
+        for district in DISTRICTS_ALL
+        for data in IDLING_OUTPUT_DATASETS
+    ],
+    ids=[
+        "--".join([data, district])
+        for district in DISTRICTS_ALL
+        for data in IDLING_OUTPUT_DATASETS
+    ],
+    indirect=["get_erlt_idling_2014b_data_py"],
+)
+def test_min_values_over_zero_pollutants(get_erlt_idling_2014b_data_py, min_val):
+    assert all(get_erlt_idling_2014b_data_py[POLLUTANT_COLS].min() >= 0)

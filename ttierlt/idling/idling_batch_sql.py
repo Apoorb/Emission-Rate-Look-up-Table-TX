@@ -25,9 +25,7 @@ def create_idling_table_in_db(delete_if_exists=False):
     conn = connect_to_server_db(database_nm=None)
     cur = conn.cursor()
     if delete_if_exists:
-        cur.execute(
-            "DROP TABLE  IF EXISTS mvs2014b_erlt_out.idling_erlt_intermediate"
-        )
+        cur.execute("DROP TABLE  IF EXISTS mvs2014b_erlt_out.idling_erlt_intermediate")
         # TODO: Add code to create output table
     cur.execute(
         """
@@ -59,15 +57,17 @@ def create_idling_table_in_db(delete_if_exists=False):
         )
         COLLATE='utf8_unicode_ci'
         ENGINE=MyISAM; 
-        """)
+        """
+    )
     conn.close()
 
 
 # noinspection SpellCheckingInspection
-class ExtnidleSqlCmds(MovesDb):
+class IdlingSqlCmds(MovesDb):
     """
     Class to execute SQL commands for idling emission process.
     """
+
     def __init__(self, db_nm_):
         super().__init__(db_nm_=db_nm_)
         self.moves2014b_db_nm = "movesdb20181022"
@@ -75,12 +75,7 @@ class ExtnidleSqlCmds(MovesDb):
         self.houridlemix = pd.DataFrame()
         self.sutmix = pd.DataFrame()
         self.created_all_indices = False
-        self.PROJECT_HOUR_PERIOD_MAP = {
-            "AM": 8,
-            "PM": 18,
-            "MD": 15,
-            "ON": 23
-        }
+        self.PROJECT_HOUR_PERIOD_MAP = {"AM": 8, "PM": 18, "MD": 15, "ON": 23}
 
     def aggregate_idlerate_movesoutput(self, debug=True):
         """
@@ -103,13 +98,15 @@ class ExtnidleSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE  IF EXISTS idlerate;")
-        self.cur.execute("""--
+        self.cur.execute(
+            """--
         CREATE TABLE idlerate (SELECT yearid, monthid,hourid,countyid,
         linkid,pollutantid,sourcetypeid,fueltypeid,sum(emissionquant)as emission 
         FROM movesoutput
         GROUP BY yearid,monthid,hourid,countyid,roadtypeid,linkid,pollutantid,
         sourcetypeid,fueltypeid);
-        """)
+        """
+        )
         self._update_idlerate_movesoutput()
         logging.info(
             "---aggregate_idlerate_movesoutput and _update_idlerate_movesoutput "
@@ -134,7 +131,8 @@ class ExtnidleSqlCmds(MovesDb):
         apprropriate data.
         """
         self.cur.execute("FLUSH TABLES;")
-        self.cur.execute("""
+        self.cur.execute(
+            """
             ALTER TABLE idlerate
             ADD COLUMN stypemix float,
             ADD COLUMN idlerate float,
@@ -143,7 +141,8 @@ class ExtnidleSqlCmds(MovesDb):
             ADD COLUMN VMTmix float,
             ADD COLUMN txledfac float(6),
             ADD COLUMN emisfact float;
-        """)
+        """
+        )
         self.cur.execute("UPDATE idlerate SET Area =  @analysis_district;")
         for period_val, hourid in self.PROJECT_HOUR_PERIOD_MAP.items():
             cmd_period_hourid = f"""
@@ -166,23 +165,24 @@ class ExtnidleSqlCmds(MovesDb):
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE IF EXISTS houridlemix;")
-        self.cur.execute("""
+        self.cur.execute(
+            """
             CREATE TABLE houridlemix (SELECT yearid,monthid,hourid,
             linkid,sourcetypeid,fueltypeid,sum(activity)as vmx 
             FROM movesactivityoutput
             WHERE activitytypeid = 4 AND activity > 0
             GROUP BY yearid,monthid,hourid,countyid,linkid,sourcetypeid,fueltypeid);
-        """)
-        self.houridlemix = pd.read_sql(
-            f"SELECT * FROM houridlemix", self.conn
+        """
         )
+        self.houridlemix = pd.read_sql(f"SELECT * FROM houridlemix", self.conn)
         self.test_houridlemix()
         return self.houridlemix
 
     def test_houridlemix(self):
         assert np.allclose(
-            self.houridlemix.groupby(["yearid", "monthid", "hourid", "linkid",
-                                      "sourcetypeid"])
+            self.houridlemix.groupby(
+                ["yearid", "monthid", "hourid", "linkid", "sourcetypeid"]
+            )
             .vmx.sum()
             .values,
             1,
@@ -196,24 +196,22 @@ class ExtnidleSqlCmds(MovesDb):
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE IF EXISTS SUTmix;")
-        self.cur.execute("""
+        self.cur.execute(
+            """
             CREATE TABLE SUTmix 
             SELECT * FROM vmtmix_fy20.todmix 
             WHERE TxDOT_Dist = @analysis_district  
             AND Daytype = "Weekday" AND YearID = @analysis_year_todmix 
             AND VMX_RDcode = 5;
-        """)
-        self.sutmix = pd.read_sql(
-            f"SELECT * FROM SUTmix", self.conn
+        """
         )
+        self.sutmix = pd.read_sql(f"SELECT * FROM SUTmix", self.conn)
         self.test_sutmix()
         return self.sutmix
 
     def test_sutmix(self):
         assert np.allclose(
-            self.sutmix.groupby(["Period"])
-            .VMTmix.sum()
-            .values,
+            self.sutmix.groupby(["Period"]).VMTmix.sum().values,
             1,
         )
 
@@ -343,7 +341,8 @@ class ExtnidleSqlCmds(MovesDb):
         self.cur.execute("UPDATE idlerate SET emisfact = idlerate * VMTmix * txledfac;")
 
     def agg_by_hourid_period(
-            self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""):
+        self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""
+    ):
         """
         Aggregate (sum) emission rate by Area, yearid, monthid, hourid, period.
         Insert the aggregated table to mvs2014b_erlt_out.idling_erlt_intermediate if
@@ -357,9 +356,11 @@ class ExtnidleSqlCmds(MovesDb):
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
                 ACTE, ACROL, ETYB, DPM, POM)
         """
-        cmd_create_conflicted = (f"CREATE TABLE mvs2014b_erlt_conflicted.idling"
-                                 f"_{self.district_abb}_{self.analysis_year}_"
-                                 f"{conflicted_copy_suffix}")
+        cmd_create_conflicted = (
+            f"CREATE TABLE mvs2014b_erlt_conflicted.idling"
+            f"_{self.district_abb}_{self.analysis_year}_"
+            f"{conflicted_copy_suffix}"
+        )
         cmd_common = """
                 SELECT Area,yearid,monthid,hourid,period,
                 SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
@@ -430,12 +431,12 @@ if __name__ == "__main__":
     path_log_file = os.path.join(path_to_log_dir, "running_test_sql.log")
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
     # ---
-    db_nms_list = get_db_nm_list(county_abb="elp")
-    db_nm = "mvs14b_erlt_elp_48141_2020_per_out"
+    db_nms_list = get_db_nm_list(district_abb="elp")
+    db_nm = "mvs14b_erlt_elp_48141_2022_per_out"
     logging.info(f"# Start processing {db_nm}")
-    db_sql_obj = ExtnidleSqlCmds(db_nm_=db_nm)
+    db_sql_obj = IdlingSqlCmds(db_nm_=db_nm)
     query_start_time = time.time()
-    # head_idlerate_df = db_sql_obj.aggregate_idlerate_movesoutput()
+    head_idlerate_df = db_sql_obj.aggregate_idlerate_movesoutput()
     hourmix = db_sql_obj.get_houridlemix()
     sutmix = db_sql_obj.get_sutmix()
     txled_elp_dict = db_sql_obj.get_txled()
@@ -443,8 +444,7 @@ if __name__ == "__main__":
     db_sql_obj.join_idlerate_houridlemix_sutmix_txled()
     db_sql_obj.compute_factored_emisrate()
     db_sql_obj.agg_by_hourid_period(
-        add_seperate_conflicted_copy=False,
-        conflicted_copy_suffix="drop_after_testing"
+        add_seperate_conflicted_copy=False, conflicted_copy_suffix="drop_after_testing"
     )
     db_sql_obj.close_conn()
     logging.info(
@@ -452,7 +452,3 @@ if __name__ == "__main__":
     )
     logging.info(f"# End processing {db_nm}")
     del db_sql_obj
-
-
-
-

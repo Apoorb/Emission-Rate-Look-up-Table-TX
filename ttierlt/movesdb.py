@@ -10,6 +10,7 @@ class MovesDb:
     """
     Common MOVES output database attributes and function.
     """
+
     def __init__(self, db_nm_):
         self.moves2014b_db_nm = "movesdb20181022"
         # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf
@@ -45,8 +46,7 @@ class MovesDb:
         }
         self.db_nm = db_nm_
 
-        county_level_db = re.compile(
-            r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out")
+        county_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out")
         """
         County level database name example: mvs14b_erlt_elp_48141_2020_1_cer_out can be 
         decomposed as follows:
@@ -59,8 +59,7 @@ class MovesDb:
             cer: County level run
             out: Output database
         """
-        project_level_db = re.compile(
-            r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_per_out")
+        project_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_per_out")
         """
         Project level database name example: mvs14b_erlt_elp_48141_2020_per_out can be 
         decomposed as follows:
@@ -88,10 +87,12 @@ class MovesDb:
                 "month_id": None,
             }
         else:
-            raise ValueError("Database name pattern doesn't match the "
-                             "following expected regex patterns. "
-                             r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out"
-                             r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_per_out")
+            raise ValueError(
+                "Database name pattern doesn't match the "
+                "following expected regex patterns. "
+                r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out"
+                r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_per_out"
+            )
 
         self.analysis_year = int(self.db_nm_county_year_month_dict["year"])
         self.district_abb = self.db_nm_county_year_month_dict["county"]

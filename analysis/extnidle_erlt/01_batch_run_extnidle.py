@@ -1,6 +1,6 @@
 """
-Script to batch process starts emission rate data and generate a single database with
-the final output for different years combined together.
+Script to batch process extended idling emission rate data and generate a single
+database with the final output for different years combined together.
 Created by: Apoorba Bibeka
 Date Created: 01/29/2021
 """
@@ -12,7 +12,6 @@ import functools
 import operator
 from ttierlt.utils import PATH_INTERIM_EXTNIDLE, get_db_nm_list
 from ttierlt.extnidle.extnidle_batch_sql import ExtnidleSqlCmds as erltExtnidle
-from ttierlt.movesdb import MovesDb
 
 
 if __name__ == "__main__":
@@ -27,7 +26,7 @@ if __name__ == "__main__":
     # TODO: Inventory and skip processed files.
     county_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
     db_nms_list_temp = [
-        get_db_nm_list(county_abb=county_abb_) for county_abb_ in county_abbs
+        get_db_nm_list(district_abb=county_abb_) for county_abb_ in county_abbs
     ]
     db_nms_list = functools.reduce(operator.iconcat, db_nms_list_temp, [])
 

@@ -60,23 +60,33 @@ def connect_to_server_db(database_nm):
     return conn_
 
 
-def get_db_nm_list(county_abb="*") -> list:
+def get_db_nm_list(district_abb="*", db_type="county") -> list:
     """
     Get all the moves database for the county with county code `county_abb` used in the moves output file. By default
     it will return databases for all counties.
     Parameters
     ----------
-    county_abb: str
+    district_abb: str
         County abbreviation used while naming the MOVES output database.
+    db_type: str
+        Database type: county or project
     Returns
     -------
     db_nms_county_year_month: list
         List with database names.
     """
-    pattern_county_year_month = os.path.join(
-        PATH_TO_MARIA_DB_DATA, f"mvs14b_erlt_{county_abb}_*_20[0-9][0-9]_[0-9]*_cer_out"
-    )
-    db_dirs_county_year_month = glob.glob(pattern_county_year_month)
+    if db_type.lower() == "county":
+        pattern_district_year_month = os.path.join(
+            PATH_TO_MARIA_DB_DATA,
+            f"mvs14b_erlt_{district_abb}_*_20[0-9][0-9]_[0-9]*_cer_out",
+        )
+    elif db_type.lower() == "project":
+        pattern_district_year_month = os.path.join(
+            PATH_TO_MARIA_DB_DATA, f"mvs14b_erlt_{district_abb}_*_20[0-9][0-9]_per_out"
+        )
+    else:
+        raise ValueError("db_type can be either 'project' or 'county'")
+    db_dirs_county_year_month = glob.glob(pattern_district_year_month)
     db_nms_county_year_month = [
         os.path.basename(dir_path) for dir_path in db_dirs_county_year_month
     ]

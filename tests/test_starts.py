@@ -183,7 +183,7 @@ def test_final_starts_erlt_matches_between_py_sql_v1(
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
-def test_unique_groups_by_area_year_rdtype_in_erlt_2014b_data(
+def test_unique_groups_by_area_year_in_erlt_2014b_data(
     get_erlt_starts_2014b_data_py,
 ):
     assert get_erlt_starts_2014b_data_py.groupby(["Area", "yearid"]).ngroups == 16

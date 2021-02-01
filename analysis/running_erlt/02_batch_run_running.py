@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     county_abbs = ["aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
     db_nms_list_temp = [
-        get_db_nm_list(county_abb=county_abb_) for county_abb_ in county_abbs
+        get_db_nm_list(district_abb=county_abb_) for county_abb_ in county_abbs
     ]
     db_nms_list = functools.reduce(operator.iconcat, db_nms_list_temp, [])
     for db_nm in db_nms_list:
@@ -41,9 +41,7 @@ if __name__ == "__main__":
         query_start_time = time.time()
         erlt_running_obj.aggregate_emisrate_rateperdist()
         hourmix_elp = erlt_running_obj.get_hourmix()
-        vmt_mix_elp_2022 = (
-            erlt_running_obj.get_vmtmix()
-        )
+        vmt_mix_elp_2022 = erlt_running_obj.get_vmtmix()
         txled_elp_dict = erlt_running_obj.get_txled()
         erlt_running_obj.create_indices_before_joins()
         erlt_running_obj.join_emisrate_vmt_tod_txled()

@@ -330,9 +330,11 @@ class StartSqlCmds(MovesDb):
                 CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
                 ACTE, ACROL, ETYB, DPM, POM)
         """
-        cmd_create_conflicted = (f"CREATE TABLE mvs2014b_erlt_conflicted.starts"
-                                 f"_{self.district_abb}_{self.analysis_year}_"
-                                 f"{self.anaylsis_month}_{conflicted_copy_suffix}")
+        cmd_create_conflicted = (
+            f"CREATE TABLE mvs2014b_erlt_conflicted.starts"
+            f"_{self.district_abb}_{self.analysis_year}_"
+            f"{self.anaylsis_month}_{conflicted_copy_suffix}"
+        )
         cmd_common = """
             SELECT Area,yearid,monthid,VehicleType,FUELTYPE,
             SUM(IF(pollutantid = 2, emisfact, 0)) AS CO,
@@ -403,7 +405,7 @@ if __name__ == "__main__":
     path_log_file = os.path.join(path_to_log_dir, "starts_test_sql.log")
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
     # ---
-    db_nms_list = get_db_nm_list(county_abb="elp")
+    db_nms_list = get_db_nm_list(district_abb="elp")
     db_nm = "mvs14b_erlt_elp_48141_2022_7_cer_out"
     logging.info(f"# Start processing {db_nm}")
     elp_2022_7_obj = StartSqlCmds(db_nm_=db_nm)
