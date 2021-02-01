@@ -1,6 +1,6 @@
 """
-Script to batch process starts emission rate data and generate a single database with the final output for different
-years combined together.
+Script to batch process starts emission rate data and generate a single database with
+the final output for different years combined together.
 Created by: Apoorba Bibeka
 Date Created: 01/29/2021
 """
@@ -59,6 +59,6 @@ if __name__ == "__main__":
         )
         print(f"# End processing {db_nm}")
         print(
-            "------------------------------------------------------------------------------------------"
+            "--------------------------------------------------------------------------"
         )
         del erlt_extnidle_obj

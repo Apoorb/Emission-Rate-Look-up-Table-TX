@@ -1,6 +1,7 @@
 """
-Interpolate emission rate for intermediate speeds using the MOBILE 6.2 interpolation formula. It uses inverse of the
-speed to interpolate. Take the maximum emission rate between the four sessons as the emission rate for the year.
+Interpolate emission rate for intermediate speeds using the MOBILE 6.2 interpolation
+formula. It uses inverse of the speed to interpolate. Take the maximum emission rate
+between the four sessons as the emission rate for the year.
 Created by: Apoorba Bibeka
 Date Created: 01/27/2021
 """
@@ -15,7 +16,8 @@ from ttierlt.utils import (
 )
 
 YEAR_LIST = np.arange(2020, 2051, 1)
-# Pollutant columns ['CO', 'NOX', 'SO2', 'NO2', 'VOC', 'CO2EQ', 'PM10', 'PM25', 'BENZ', 'NAPTH', 'BUTA', 'FORM', 'ACTE',
+# Pollutant columns ['CO', 'NOX', 'SO2', 'NO2', 'VOC', 'CO2EQ', 'PM10', 'PM25', 'BENZ',
+# 'NAPTH', 'BUTA', 'FORM', 'ACTE',
 # 'ACROL', 'ETYB', 'DPM', 'POM']
 AVG_SPEED_LIST = [2.5] + list(range(3, 76))
 INVERSE_AVG_SPEED_LIST = [1 / avgspeed for avgspeed in AVG_SPEED_LIST]
@@ -24,7 +26,8 @@ MAP_INVERSE_AVG_SPD = dict(zip(INVERSE_AVG_SPEED_LIST, AVG_SPEED_LIST))
 
 def pivot_df_reindex_spd_for_qaqc(df_db_format, pollutant_columns):
     """
-    Take the dataframes created from the table mvs2014b_erlt_out.running_erlt_intermediate and pivot them to allow
+    Take the dataframes created from the table
+    mvs2014b_erlt_out.running_erlt_intermediate and pivot them to allow
     QAQC operations in excel.
     """
     db_qaqc_excel_format = df_db_format.pivot_table(
@@ -48,7 +51,8 @@ if __name__ == "__main__":
         PATH_INTERIM_RUNNING,
         "running_erlt_intermediate_yr_interpolate_spd_interpolated_py_qaqc.xlsx",
     )
-    # Connect to server to get running_erlt_intermediate data with data for only even years between 2020 and 2050.
+    # Connect to server to get running_erlt_intermediate data with data for only even
+    # years between 2020 and 2050.
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
     erlt_df_2014b_yr_interpolated_py = pd.read_sql(
         "SELECT * FROM running_erlt_intermediate_yr_interpolated", conn
@@ -63,14 +67,16 @@ if __name__ == "__main__":
     pivot_df_reindex_spd_for_qaqc(
         erlt_df_2014b_yr_interpolated_py, pollutant_columns
     ).to_excel(path_to_temp_mv2014b_df_spd)
-    # Iterate over partitioned data based on ["Area", "monthid", "funclass", "avgspeed"] and interpolate the emission
+    # Iterate over partitioned data based on ["Area", "monthid", "funclass", "avgspeed"]
+    # and interpolate the emission
     # rate for odd years.
     erlt_df_2014b_py_grpd = erlt_df_2014b_yr_interpolated_py.groupby(
         ["Area", "yearid", "monthid", "funclass"]
     )
     list_spd_interpolated_df = []
     for grp_key, grp_df_spd in erlt_df_2014b_py_grpd:
-        # Use multi-index to create placeholder rows in grp_df_yr_all_yr for missing year.
+        # Use multi-index to create placeholder rows in grp_df_yr_all_yr for missing
+        # year.
         set_index_list = ["Area", "yearid", "monthid", "funclass", "avgspeed"]
         mux_group_avgspd = pd.MultiIndex.from_product(
             [[grp_key[0]], [grp_key[1]], [grp_key[2]], [grp_key[3]], AVG_SPEED_LIST],
@@ -83,7 +89,8 @@ if __name__ == "__main__":
         grp_df_spd_all_invverse_spds["inverse_avgspeed"] = (
             1 / grp_df_spd_all_invverse_spds.avgspeed
         )
-        # Iterate over each pollutant---create interpolation function---fill all value from the interpolation function.
+        # Iterate over each pollutant---create interpolation function---fill all value
+        # from the interpolation function.
         for pollutant in pollutant_columns:
             y_emisrate = grp_df_spd[pollutant].values
             func_interpolate = interp1d(x_spd, y_emisrate)

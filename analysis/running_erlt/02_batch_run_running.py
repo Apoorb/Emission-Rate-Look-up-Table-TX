@@ -1,6 +1,6 @@
 """
-Script to batch process EL-Passo emission rate data and generate a single database with the final output for different
-years combined together.
+Script to batch process EL-Passo emission rate data and generate a single database with
+the final output for different years combined together.
 Created by: Apoorba Bibeka
 Date Created: 01/22/2021
 """
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         )
         print(f"# End processing {db_nm}")
         print(
-            "------------------------------------------------------------------------------------------"
+            "--------------------------------------------------------------------------"
         )
         erlt_running_obj.close_conn()
         del erlt_running_obj

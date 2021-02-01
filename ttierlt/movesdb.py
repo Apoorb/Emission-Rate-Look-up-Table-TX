@@ -121,8 +121,9 @@ class MovesDb:
 
     def get_txled_for_db_district_year(self):
         """
-        Get the TxLED factors by year from the txled_db.txled_long table. Use use_txled to determine if a county/
-        district has TxLED program. Use @analysis_year to filter TxLed factor years to only the analysis year.
+        Get the TxLED factors by year from the txled_db.txled_long table. Use use_txled
+        to determine if a county/ district has TxLED program. Use @analysis_year to
+        filter TxLed factor years to only the analysis year.
         Parameters
         ----------
         Returns
@@ -164,7 +165,8 @@ class MovesDb:
             return {"txled_df": self.txled_df, "txled_yr": txled_yearid_from_sql_table}
 
     def test_txled_cor_year_pulled(self, txled_yr):
-        """Check if the year matches for TxLED and the MOVES database under processing."""
+        """Check if the year matches for TxLED and the MOVES database under
+        processing."""
         assert txled_yr == self.analysis_year, (
             "Compare the self.analysis_year with yearid in self.txled. See why "
             "there is a mismatch."

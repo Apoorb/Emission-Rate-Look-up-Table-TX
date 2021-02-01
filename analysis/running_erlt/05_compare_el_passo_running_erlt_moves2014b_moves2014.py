@@ -1,5 +1,6 @@
 """
-Create dashboard for comparing the ERLT output of the recent MOVES run with the results from previous studies.
+Create dashboard for comparing the ERLT output of the recent MOVES run with the results
+from previous studies.
 Created by: Apoorba Bibeka
 Date Created: 01/24/2021
 """
@@ -21,7 +22,8 @@ cur = conn.cursor()
 erlt_elp_df_2014b = pd.read_sql(
     "SELECT * FROM running_erlt_intermediate_yr_interpolated_spd_interpolated", conn
 )
-# erlt_elp_df_2014b.to_csv(r"C:\Users\A-Bibeka\ProjectCode\TTI\ERLT_Plot\data\ERLT_elp_with_MOVES_2014b.csv")
+# erlt_elp_df_2014b.to_csv(
+# r"C:\Users\A-Bibeka\ProjectCode\TTI\ERLT_Plot\data\ERLT_elp_with_MOVES_2014b.csv")
 
 erlt_elp_df_2014b_long = (
     erlt_elp_df_2014b.rename(columns={"CO2EQ": "CO2"})
@@ -128,7 +130,8 @@ app.layout = html.Div(
                     className="eight columns",
                     children=[
                         html.H1(
-                            "El Paso Emission Rate Look-Up Table Comparison between MOVES 2014 and MOVES 2014b"
+                            "El Paso Emission Rate Look-Up Table Comparison between "
+                            "MOVES 2014 and MOVES 2014b"
                         ),
                         dcc.Dropdown(
                             id="pollutant-dropdown",

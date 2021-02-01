@@ -76,7 +76,8 @@ class StartSqlCmds(MovesDb):
         """
         Script creates the required start rate table from MOVES output databases
         Only required pollutants are selected based on the rateperstart output table
-        Emission rates are summed overyearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid.
+        Emission rates are summed overyearid,monthid,hourid,pollutantid,sourcetypeid,
+        fueltypeid.
         Parameters
         ----------
         debug: bool
@@ -84,7 +85,8 @@ class StartSqlCmds(MovesDb):
         Returns
         -------
         pd.DataFrame()
-            Returns empty pd.DataFrame() when debug = False; return first 5 rows of startrate if debug=True.
+            Returns empty pd.DataFrame() when debug = False; return first 5 rows of
+            startrate if debug=True.
         """
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
@@ -94,15 +96,17 @@ class StartSqlCmds(MovesDb):
             CREATE TABLE startrate (SELECT yearid, monthid,hourid,
             pollutantid,sourcetypeid,fueltypeid,sum(rateperstart)as ERate 
             FROM rateperstart
-            WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,41,68, 69,70,71, 72, 73, 74, 75, 76, 
-            77, 78, 81, 82, 83, 84, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184)
+            WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,41,68, 
+            69,70,71, 72, 73, 74, 75, 76, 77, 78, 81, 82, 83, 84, 168, 169, 170, 171, 
+            172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184)
             GROUP BY yearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid);
         """
         )
         self._update_startrate_rateperstart()
         self._update_sourcetypename_joins()
         logging.info(
-            "---aggregate_startrate_rateperstart and _update_startrate_rateperstart execution time:  %s seconds "
+            "---aggregate_startrate_rateperstart and _update_startrate_rateperstart "
+            "execution time:  %s seconds "
             "---" % (time.time() - start_time)
         )
         if debug:
@@ -110,7 +114,8 @@ class StartSqlCmds(MovesDb):
                 f"SELECT * FROM startrate LIMIT 5", self.conn
             )
             print(
-                "---aggregate_startrate_rateperstart and _update_startrate_rateperstart execution time:  %s seconds "
+                "---aggregate_startrate_rateperstart and _update_startrate_rateperstart"
+                " execution time:  %s seconds "
                 "---" % (time.time() - start_time)
             )
             return self.head_startrate_df
@@ -121,7 +126,6 @@ class StartSqlCmds(MovesDb):
         # Script to add necessary fields to the startrate table.
         """
         cmd_add_additional_fields = """
-            -- Script to add necessary fields to the rate table and populate it with apprropriate data
             FLUSH TABLES;
             ALTER TABLE startrate
             ADD COLUMN Hourmix float,
@@ -142,12 +146,14 @@ class StartSqlCmds(MovesDb):
         for fueltypeid, fueltypenm in self.fueltypedict.items():
             self.cur.execute("FLUSH TABLES;")
             cmd_set_fueldesc = f"""
-                UPDATE startrate SET FuelType = "{fueltypenm}" Where FuelTypeID = {fueltypeid};
+                UPDATE startrate 
+                SET FuelType = "{fueltypenm}" Where FuelTypeID = {fueltypeid};
             """
             self.cur.execute(cmd_set_fueldesc)
 
     def _update_sourcetypename_joins(self):
-        """Add vehicle type description from the MOVES 2014b database (movesdb20181022)."""
+        """Add vehicle type description from the MOVES 2014b database
+        (movesdb20181022)."""
         self.cur.execute("FLUSH TABLES;")
         cmd_set_sourcetypenm = f"""
             -- Script to add vehicle type group to each MOVES sourcetypeid
@@ -160,8 +166,8 @@ class StartSqlCmds(MovesDb):
 
     def get_hourmix_starts(self):
         """
-        Script creates the start-mix table from the movesactivity output table available in the MOVES output
-        supplied for rate development.
+        Script creates the start-mix table from the movesactivity output table available
+        in the MOVES output supplied for rate development.
         Returns
         -------
         """
@@ -169,7 +175,8 @@ class StartSqlCmds(MovesDb):
         self.cur.execute("DROP TABLE  IF EXISTS hourmix_starts;")
         cmd_hourmix_starts = """
             CREATE TABLE hourmix_starts
-            SELECT hourID,sourceTypeID,fuelTypeID, startsPerVehicle FROM startspervehicle;
+            SELECT hourID,sourceTypeID,fuelTypeID, startsPerVehicle 
+            FROM startspervehicle;
         """
         self.cur.execute(cmd_hourmix_starts)
         self._update_hourmix_starts()
@@ -186,8 +193,9 @@ class StartSqlCmds(MovesDb):
         )
 
     def _update_hourmix_starts(self):
-        """Add additional fields to hourmix_starts and add a daily daily (24 hours) starts per vehicle column to
-        hourmix data. This column in then use to get the proportion of starts in an hour a fraction of daily starts.
+        """Add additional fields to hourmix_starts and add a daily daily (24 hours)
+        starts per vehicle column to hourmix data. This column in then use to get the
+        proportion of starts in an hour a fraction of daily starts.
         """
         cmd_add_cols_hourmix_starts = """
         ALTER TABLE hourmix_starts
@@ -197,12 +205,11 @@ class StartSqlCmds(MovesDb):
         self.cur.execute(cmd_add_cols_hourmix_starts)
         self.cur.execute("FLUSH TABLES;")
         cmd_add_col_daily_starts_by_veh_fueltype = """
-            -- Script to calculate hour-mix 
             UPDATE hourmix_starts as r
             JOIN 
             (SELECT sourceTypeID, fuelTypeID, SUM(startsPerVehicle) as sumact
-			FROM hourmix_starts a 
-			GROUP BY sourceTypeID, fuelTypeID) AS grp
+            FROM hourmix_starts a 
+            GROUP BY sourceTypeID, fuelTypeID) AS grp
             ON                   
             r.sourceTypeID = grp.sourceTypeID  AND
             r.fuelTypeID = grp.fuelTypeID
@@ -219,19 +226,23 @@ class StartSqlCmds(MovesDb):
         """Create indices for all tables before join to speed-up the join."""
         try:
             self.cur.execute(
-                """CREATE INDEX IF NOT EXISTS stridx1 ON startrate (hourID, sourcetypeid, fueltypeid);"""
+                """CREATE INDEX IF NOT EXISTS stridx1 
+                ON startrate (hourID, sourcetypeid, fueltypeid);"""
             )
             self.cur.execute(
                 """
-            CREATE INDEX IF NOT EXISTS hrmix_stdx1 ON hourmix_starts (hourID, sourcetypeid, fueltypeid);"""
+            CREATE INDEX IF NOT EXISTS hrmix_stdx1 
+            ON hourmix_starts (hourID, sourcetypeid, fueltypeid);"""
             )
             if self.use_txled:
                 self.cur.execute(
-                    """CREATE INDEX IF NOT EXISTS  stridx2 ON startrate (pollutantid, sourcetypeid, fueltypeid);"""
+                    """CREATE INDEX IF NOT EXISTS stridx2 
+                    ON startrate (pollutantid, sourcetypeid, fueltypeid);"""
                 )
                 self.cur.execute(
                     f"""
-                    CREATE INDEX IF NOT EXISTS  txledidx1 ON txled_long_{self.analysis_year} 
+                    CREATE INDEX IF NOT EXISTS  txledidx1 
+                    ON txled_long_{self.analysis_year} 
                     (pollutantid, sourcetypeid, fueltypeid);
                 """
                 )
@@ -239,14 +250,16 @@ class StartSqlCmds(MovesDb):
         except mariadb.ProgrammingError as mdberr:
             print(mdberr)
             print(
-                "Run aggregate_startrate_rateperstart, get_hourmix_starts,  get_txled_for_db_district_year functions "
+                "Run aggregate_startrate_rateperstart, get_hourmix_starts, "
+                "get_txled_for_db_district_year functions "
                 "before creating indices."
             )
             raise
 
     def join_startrate_txled_hourmix(self):
         """
-        Join vehicle starts distribution and TxLED emission reduction factors to the startrate table.
+        Join vehicle starts distribution and TxLED emission reduction factors to the
+        startrate table.
         """
         start_time = time.time()
         if self.created_all_indices:
@@ -282,8 +295,8 @@ class StartSqlCmds(MovesDb):
                 self.cur.execute(f"""UPDATE startrate SET txledfac = 1.0;""")
         else:
             print(
-                "Run create_indices_before_joins to speed-up joins. Will not run this function unless "
-                "create_indices_before_joins ran without errors."
+                "Run create_indices_before_joins to speed-up joins. Will not run this "
+                "function unless create_indices_before_joins ran without errors."
             )
             raise ValueError("self.created_all_indices is still False.")
         print(
@@ -296,22 +309,26 @@ class StartSqlCmds(MovesDb):
         )
 
     def compute_factored_startrate(self):
-        """Weight the emission rate by time of day starts distribution and TxLED factor for counties where TxLED program
-        is active in a county (or majority of county of a district.)"""
+        """Weight the emission rate by time of day starts distribution and TxLED factor
+        for counties where TxLED program is active in a county (or majority of county of
+        a district.)"""
         self.cur.execute("""UPDATE startrate SET emisFact = ERate*HourMix*txledfac;""")
 
     def agg_by_vehtyp_fueltyp(
         self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""
     ):
         """
-        Aggregate (sum) emission rate by Area, yearid, monthid, VehicleType, FUELTYP. Insert the aggregated table
-        to mvs2014b_erlt_out.starts_erlt_intermediate if no duplicate exists. Alternatively, save a conflicted copy
+        Aggregate (sum) emission rate by Area, yearid, monthid, VehicleType, FUELTYP.
+        Insert the aggregated table to mvs2014b_erlt_out.starts_erlt_intermediate if
+        no duplicate exists. Alternatively, save a conflicted copy
         mvs2014_erlt_conflicted schema.
         """
         start_time = time.time()
         cmd_insert = """
-                INSERT INTO mvs2014b_erlt_out.starts_erlt_intermediate( Area, yearid, monthid, VehicleType, FUELTYPE, 
-                CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, ACTE, ACROL, ETYB, DPM, POM)
+                INSERT INTO mvs2014b_erlt_out.starts_erlt_intermediate( Area, yearid, 
+                monthid, VehicleType, FUELTYPE, 
+                CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
+                ACTE, ACROL, ETYB, DPM, POM)
         """
         cmd_create_conflicted = f"""
              CREATE TABLE mvs2014b_erlt_conflicted.starts_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}
@@ -367,10 +384,12 @@ class StartSqlCmds(MovesDb):
         except mariadb.IntegrityError as integerityrr:
             print(integerityrr)
             print(
-                "Re-create the mvs2014b_erlt_out.starts_erlt_intermediate table if you want to overwrite it."
+                "Re-create the mvs2014b_erlt_out.starts_erlt_intermediate table if you "
+                "want to overwrite it."
             )
             print(
-                f"Cannot write over the data in mvs2014b_erlt_out.starts_erlt_intermediate. Drop the rows you are"
+                f"Cannot write over the data in "
+                f"mvs2014b_erlt_out.starts_erlt_intermediate. Drop the rows you are"
                 f"trying to overwrite"
             )
             raise

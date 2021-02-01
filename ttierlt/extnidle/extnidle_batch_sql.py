@@ -1,5 +1,5 @@
 """
-Module to execute SQL commands for starts emission process.
+Module to execute SQL commands for extended idling emission process.
 Created by: Apoorba Bibeka
 Created on: 01/29/2021
 """
@@ -19,7 +19,8 @@ def create_extnidle_table_in_db(delete_if_exists=False):
     Create  mvs2014b_erlt_out.extnidle_erlt_intermediate table for storing output.
     Parameters
     ----------
-    delete_if_exists: Delete the existing mvs2014b_erlt_out.extnidle_erlt_intermediate table (if it exists).
+    delete_if_exists: Delete the existing mvs2014b_erlt_out.extnidle_erlt_intermediate
+    table (if it exists).
     """
     # delete_if_exists: Check if we want to delete the previous stored table
     conn = connect_to_server_db(database_nm=None)
@@ -52,7 +53,8 @@ def create_extnidle_table_in_db(delete_if_exists=False):
         `ETYB` DECIMAL(23,19) NULL DEFAULT NULL,
         `DPM` DECIMAL(23,19) NULL DEFAULT NULL,
         `POM` DECIMAL(23,19) NULL DEFAULT NULL,
-        CONSTRAINT extnidle_erlt_intermediate_pk PRIMARY KEY (Area, yearid, monthid, Processtype)
+        CONSTRAINT extnidle_erlt_intermediate_pk PRIMARY KEY (Area, yearid, monthid, 
+        Processtype)
         )
         COLLATE='utf8_unicode_ci'
         ENGINE=MyISAM;
@@ -71,16 +73,16 @@ class ExtnidleSqlCmds(MovesDb):
 
     def __init__(self, db_nm_):
         super().__init__(db_nm_=db_nm_)
-        self.moves2014b_db_nm = "movesdb20181022"
         self.head_extnidlerate_df = pd.DataFrame()
         self.hourmix_extidle = pd.DataFrame()
         self.created_all_indices = False
 
     def aggregate_extnidlerate_rateperhour(self, debug=True):
         """
-        Script creates the required extended idling rate table from MOVES output databases
-        Only required pollutants are selected based on the rateperhour output table
-        Emission rates are summed yearID,monthid,hourID, pollutantID, sourceTypeID, fuelTypeID, processid.
+        Script creates the required extended idling rate table from MOVES output
+        databases. Only required pollutants are selected based on the rateperhour
+        output table. Emission rates are summed yearID,monthid,hourID, pollutantID,
+        sourceTypeID, fuelTypeID, processid.
         Parameters
         ----------
         debug: bool
@@ -88,7 +90,8 @@ class ExtnidleSqlCmds(MovesDb):
         Returns
         -------
         pd.DataFrame()
-            Returns empty pd.DataFrame() when debug = False; return first 5 rows of extnidlerate if debug=True.
+            Returns empty pd.DataFrame() when debug = False; return first 5 rows of
+            extnidlerate if debug=True.
         """
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
@@ -96,17 +99,21 @@ class ExtnidleSqlCmds(MovesDb):
         self.cur.execute(
             f"""
             CREATE TABLE Extnidlerate
-            SELECT yearID, monthid, hourID, pollutantID, sourceTypeID, fuelTypeID, processid,sum(ratePerHour) as rateperhour 
+            SELECT yearID, monthid, hourID, pollutantID, sourceTypeID, fuelTypeID, 
+            processid,sum(ratePerHour) as rateperhour 
             FROM rateperhour
-            WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,41,68, 69,70,71, 72, 73, 74, 75, 76, 77, 78,
-            81, 82, 83, 84, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184) and sourceTypeID 
+            WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,41,68, 
+            69,70,71, 72, 73, 74, 75, 76, 77, 78, 81, 82, 83, 84, 168, 169, 170, 171, 
+            172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184) and sourceTypeID 
             = {self.sourcetypedict["Combination Long-haul Truck"]}
-            group by yearID,monthid,hourID, pollutantID, sourceTypeID, fuelTypeID, processid;
+            group by yearID,monthid,hourID, pollutantID, sourceTypeID, fuelTypeID, 
+            processid;
         """
         )
         self._update_extnidlerate_rateperhour()
         logging.info(
-            "---aggregate_extnidlerate_rateperhour and _update_extnidlerate_rateperhour execution time:  %s seconds "
+            "---aggregate_extnidlerate_rateperhour and _update_extnidlerate_rateperhour"
+            " execution time:  %s seconds "
             "---" % (time.time() - start_time)
         )
         if debug:
@@ -114,7 +121,8 @@ class ExtnidleSqlCmds(MovesDb):
                 f"SELECT * FROM Extnidlerate LIMIT 5", self.conn
             )
             print(
-                "---aggregate_extnidlerate_rateperhour and _update_extnidlerate_rateperhour execution time:  %s seconds "
+                "---aggregate_extnidlerate_rateperhour and "
+                "_update_extnidlerate_rateperhour execution time:  %s seconds "
                 "---" % (time.time() - start_time)
             )
             return self.head_extnidlerate_df
@@ -122,7 +130,8 @@ class ExtnidleSqlCmds(MovesDb):
 
     def _update_extnidlerate_rateperhour(self):
         """
-        Function to add necessary fields to the rate table and populate it with apprropriate data.
+        Function to add necessary fields to the rate table and populate it with
+        apprropriate data.
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(
@@ -138,7 +147,8 @@ class ExtnidleSqlCmds(MovesDb):
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("""Update Extnidlerate SET Area = @analysis_district;""")
         self.cur.execute(
-            "UPDATE Extnidlerate SET Processtype = 'Extnd_Exhaust' WHERE Processid in (17,90);"
+            "UPDATE Extnidlerate "
+            "SET Processtype = 'Extnd_Exhaust' WHERE Processid in (17,90);"
         )
         self.cur.execute(
             "UPDATE Extnidlerate SET Processtype = 'APU' WHERE Processid = 91;"
@@ -149,10 +159,8 @@ class ExtnidleSqlCmds(MovesDb):
         -- Function creates the hour-mix table from the MOVES default database
         -- Note that default databse need to be present in order to execute
         this  query
-        -- If MOVES model version is updated by EPA, MOVES default schema referenced here need to be changed
-        Returns
-        -------
-
+        -- If MOVES model version is updated by EPA, MOVES default schema referenced
+        here need to be changed.
         """
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("DROP TABLE  IF EXISTS hourmix_extidle;")
@@ -187,11 +195,13 @@ class ExtnidleSqlCmds(MovesDb):
             )
             if self.use_txled:
                 self.cur.execute(
-                    "CREATE INDEX IF NOT EXISTS extnidleidx2 ON Extnidlerate (pollutantid, sourcetypeid, fueltypeid);"
+                    "CREATE INDEX IF NOT EXISTS extnidleidx2 "
+                    "ON Extnidlerate (pollutantid, sourcetypeid, fueltypeid);"
                 )
                 self.cur.execute(
                     f"""
-                    CREATE INDEX IF NOT EXISTS txledidx1 ON txled_long_{self.analysis_year} 
+                    CREATE INDEX IF NOT EXISTS txledidx1 
+                    ON txled_long_{self.analysis_year} 
                     (pollutantid, sourcetypeid, fueltypeid);
                 """
                 )
@@ -242,8 +252,8 @@ class ExtnidleSqlCmds(MovesDb):
                 self.cur.execute(f"""UPDATE Extnidlerate SET txledfac = 1.0;""")
         else:
             print(
-                "Run create_indices_before_joins to speed-up joins. Will not run this function unless "
-                "create_indices_before_joins ran without errors."
+                "Run create_indices_before_joins to speed-up joins. Will not run this "
+                "function unless create_indices_before_joins ran without errors."
             )
             raise ValueError("self.created_all_indices is still False.")
         print(
@@ -267,14 +277,17 @@ class ExtnidleSqlCmds(MovesDb):
         self, add_seperate_conflicted_copy=False, conflicted_copy_suffix=""
     ):
         """
-        Aggregate (sum) emission rate by yearid, monthid, Processtype. Insert the aggregated table
-        to mvs2014b_erlt_out.extnidle_erlt_intermediate if no duplicate exists. Alternatively, save a conflicted copy
+        Aggregate (sum) emission rate by yearid, monthid, Processtype. Insert the
+        aggregated table to mvs2014b_erlt_out.extnidle_erlt_intermediate if no
+        duplicate exists. Alternatively, save a conflicted copy
         mvs2014_erlt_conflicted schema.
         """
         start_time = time.time()
         cmd_insert = """
-                INSERT INTO mvs2014b_erlt_out.extnidle_erlt_intermediate( Area, yearid, monthid, Processtype, 
-                CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, ACTE, ACROL, ETYB, DPM, POM)
+                INSERT INTO mvs2014b_erlt_out.extnidle_erlt_intermediate( Area, yearid, 
+                monthid, Processtype, 
+                CO, NOX, SO2, NO2, VOC, CO2EQ, PM10, PM25, BENZ, NAPTH, BUTA, FORM, 
+                ACTE, ACROL, ETYB, DPM, POM)
         """
         cmd_create_conflicted = f"""
              CREATE TABLE mvs2014b_erlt_conflicted.extnidle_{self.district_abb}_{self.analysis_year}_{self.anaylsis_month}_{conflicted_copy_suffix}"""
