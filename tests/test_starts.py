@@ -74,7 +74,8 @@ def get_erlt_starts_2014b_data_py(request):
 
 @pytest.fixture(scope="session")
 def get_qaqc_tables_created_from_sql():
-    """QAQC tables are created by running the original SQL scripts created independently of the python code."""
+    """QAQC tables are created by running the original SQL scripts created
+    independently of the python code."""
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_qaqc")
     cur = conn.cursor()
     cur.execute(" SHOW TABLES")
@@ -108,7 +109,8 @@ def get_py_sql_df_list(
     except KeyError as err1:
         print(
             err1,
-            f"!!!Data for {request.param['grp_key']} does not exists in starts_erlt_intermediate!!!!",
+            f"!!!Data for {request.param['grp_key']} does not exists in "
+            f"starts_erlt_intermediate!!!!",
         )
         raise
     try:
@@ -118,7 +120,8 @@ def get_py_sql_df_list(
     except KeyError as err1:
         print(
             err1,
-            f"!!!Data for {request.param['grp_key']} does not exists in mvs2014b_erlt_qaqc!!!!",
+            f"!!!Data for {request.param['grp_key']} does not exists in "
+            f"mvs2014b_erlt_qaqc!!!!",
         )
         raise
     return {
