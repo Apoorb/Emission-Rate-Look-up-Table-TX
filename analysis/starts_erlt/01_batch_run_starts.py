@@ -43,7 +43,7 @@ if __name__ == "__main__":
         erlt_starts_obj = erltStarts(db_nm_=db_nm)
         sample_startrate = erlt_starts_obj.aggregate_startrate_rateperstart()
         hourmix_starts = erlt_starts_obj.get_hourmix_starts()
-        txled_elp_dict = erlt_starts_obj.get_txled_for_db_district_year()
+        txled_elp_dict = erlt_starts_obj.get_txled()
         erlt_starts_obj.create_indices_before_joins()
         erlt_starts_obj.join_startrate_txled_hourmix()
         erlt_starts_obj.compute_factored_startrate()

@@ -42,7 +42,7 @@ if __name__ == "__main__":
         erlt_extnidle_obj = erltExtnidle(db_nm_=db_nm)
         sample_extnidlerate = erlt_extnidle_obj.aggregate_extnidlerate_rateperhour()
         hourmix_extidle = erlt_extnidle_obj.get_hourmix_extidle()
-        txled_elp_dict = erlt_extnidle_obj.get_txled_for_db_district_year()
+        txled_elp_dict = erlt_extnidle_obj.get_txled()
         erlt_extnidle_obj.create_indices_before_joins()
         erlt_extnidle_obj.join_extnidlerate_txled_hourmix()
         erlt_extnidle_obj.compute_factored_extnidlerate()

@@ -8,7 +8,6 @@ import pandas as pd
 import mariadb
 import os
 import numpy as np
-import datetime
 import logging
 from ttierlt.movesdb import MovesDb
 from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_EXTNIDLE
@@ -372,7 +371,7 @@ if __name__ == "__main__":
     query_start_time = time.time()
     sample_extnidlerate = elp_2022_7_obj.aggregate_extnidlerate_rateperhour()
     hourmix_extidle = elp_2022_7_obj.get_hourmix_extidle()
-    txled_elp_dict = elp_2022_7_obj.get_txled_for_db_district_year()
+    txled_elp_dict = elp_2022_7_obj.get_txled()
     elp_2022_7_obj.create_indices_before_joins()
     elp_2022_7_obj.join_extnidlerate_txled_hourmix()
     elp_2022_7_obj.compute_factored_extnidlerate()
