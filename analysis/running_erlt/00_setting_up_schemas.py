@@ -1,6 +1,5 @@
 """
-Create the Schemas in MaraDB needed for saving TxLED Tables and Output Intermediate
-data.
+Create the Schemas in MaraDB needed for saving  Output Intermediate data.
 Created by: Apoorba Bibeka
 Date Created: 01/25/2021
 """
@@ -19,14 +18,15 @@ create_qaqc_output_conflicted_schema()
 
 # Delete the existing output table. It cannot have duplicated data; will raise error if
 # you try to add duplicated data.
-delete_if_exists = False
-if delete_if_exists:
-    delete_if_exists_user_input = input(
-        "Do you want to loose the data from previous runs and create a fresh "
-        "running_erlt_intermediate table?(y/n)"
-    )
-    if delete_if_exists_user_input.lower() == "y":
-        create_running_table_in_db(delete_if_exists=delete_if_exists_user_input)
+delete_if_exists_user_input = input(
+    "Do you want to loose the data from previous runs and create a fresh "
+    "running_erlt_intermediate table?(y/n)"
+)
+if delete_if_exists_user_input.lower() == "y":
+    delete_if_exists = True
+else:
+    delete_if_exists = False
+create_running_table_in_db(delete_if_exists=delete_if_exists)
 
 # Clean-up existing intermediate tables.
 
