@@ -25,9 +25,9 @@ if __name__ == "__main__":
     # # Get list of processed databases.
     # TODO: Inventory and skip processed files.
 
-    county_abbs = ["aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
+    district_abbs = ["aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
     db_nms_list_temp = [
-        get_db_nm_list(district_abb=county_abb_) for county_abb_ in county_abbs
+        get_db_nm_list(district_abb=county_abb_) for county_abb_ in district_abbs
     ]
     db_nms_list = functools.reduce(operator.iconcat, db_nms_list_temp, [])
     for db_nm in db_nms_list:
