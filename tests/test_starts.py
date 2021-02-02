@@ -54,7 +54,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = ["El Paso", "Austin"]
+DISTRICTS_PRCSD = ["El Paso"]
 STARTS_OUTPUT_DATASETS = [
     "starts_erlt_intermediate",
     "starts_erlt_intermediate_yr_interpolated_no_monthid",
@@ -263,12 +263,12 @@ def test_unique_vehicletypes_fueltypes(get_erlt_starts_2014b_data_py):
     "get_erlt_starts_2014b_data_py, quantile_unique",
     [
         ({"data": data, "fil_county": [district]}, 1)
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in STARTS_OUTPUT_DATASETS
     ],
     ids=[
         "--".join([data, district])
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in STARTS_OUTPUT_DATASETS
     ],
     indirect=["get_erlt_starts_2014b_data_py"],
@@ -292,12 +292,12 @@ def test_unique_values_percent_unique_pollutants(
     "get_erlt_starts_2014b_data_py, min_val",
     [
         ({"data": data, "fil_county": [district]}, 1)
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in STARTS_OUTPUT_DATASETS
     ],
     ids=[
         "--".join([data, district])
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in STARTS_OUTPUT_DATASETS
     ],
     indirect=["get_erlt_starts_2014b_data_py"],
