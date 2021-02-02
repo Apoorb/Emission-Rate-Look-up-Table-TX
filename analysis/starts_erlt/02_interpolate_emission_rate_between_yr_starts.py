@@ -54,8 +54,28 @@ if __name__ == "__main__":
     # TODO: Remove the Where Area = "El Paso" filter after running all runs.
     # raise ValueError("erlt_df_2014b_py should eventually contain all districts")
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
+    DISTRICTS_ALL = (
+        "El Paso",
+        "Austin",
+        "Corpus Christi",
+        "Beaumont",
+        "Dallas",
+        "Fort Worth",
+        "Houston",
+        "Waco",
+        "San Antonio"
+    )
+    DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
+    if len(DISTRICTS_PRCSD) == 1:
+        DISTRICTS_PRCSD_TP = list(DISTRICTS_PRCSD)
+        DISTRICTS_PRCSD_TP.append("HACK_FOR_WHERE_SQL")
+        DISTRICTS_PRCSD_SQL_SAFE = tuple(DISTRICTS_PRCSD_TP)
+    else:
+        DISTRICTS_PRCSD_SQL_SAFE = DISTRICTS_PRCSD
     erlt_df_2014b_py = pd.read_sql(
-        """SELECT * FROM starts_erlt_intermediate WHERE Area = 'El Paso'; """, conn
+        f"""SELECT * FROM starts_erlt_intermediate 
+        WHERE Area IN {DISTRICTS_PRCSD_SQL_SAFE}; """,
+        conn
     )
     conn.close()
     # Year Interpolation
