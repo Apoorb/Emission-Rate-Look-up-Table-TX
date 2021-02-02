@@ -10,7 +10,31 @@ class MovesDb:
     """
     Common MOVES output database attributes and function.
     """
-
+    county_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out")
+    """
+    County level database name example: mvs14b_erlt_elp_48141_2020_1_cer_out can be 
+    decomposed as follows:
+        mvs14b: MOVES 2014---index 0
+        erlt: Project name; emission rate look-up table---index 1
+        elp: El-Passo---index 2
+        48141: FIPS code for El-Passo County---index 3
+        2020: Year---index 4
+        1: Month; Jan---index 5
+        cer: County level run
+        out: Output database
+    """
+    project_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_per_out")
+    """
+    Project level database name example: mvs14b_erlt_elp_48141_2020_per_out can be 
+    decomposed as follows:
+        mvs14b: MOVES 2014---index 0
+        erlt: Project name; emission rate look-up table---index 1
+        elp: El-Passo---index 2
+        48141: FIPS code for El-Passo County---index 3
+        2020: Year---index 4
+        per: Project level run 
+        out: Output database
+    """
     def __init__(self, db_nm_):
         self.moves2014b_db_nm = "movesdb20181022"
         # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf
@@ -46,32 +70,7 @@ class MovesDb:
         }
         self.db_nm = db_nm_
 
-        county_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out")
-        """
-        County level database name example: mvs14b_erlt_elp_48141_2020_1_cer_out can be 
-        decomposed as follows:
-            mvs14b: MOVES 2014---index 0
-            erlt: Project name; emission rate look-up table---index 1
-            elp: El-Passo---index 2
-            48141: FIPS code for El-Passo County---index 3
-            2020: Year---index 4
-            1: Month; Jan---index 5
-            cer: County level run
-            out: Output database
-        """
-        project_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_per_out")
-        """
-        Project level database name example: mvs14b_erlt_elp_48141_2020_per_out can be 
-        decomposed as follows:
-            mvs14b: MOVES 2014---index 0
-            erlt: Project name; emission rate look-up table---index 1
-            elp: El-Passo---index 2
-            48141: FIPS code for El-Passo County---index 3
-            2020: Year---index 4
-            per: Project level run 
-            out: Output database
-        """
-        if re.match(county_level_db, self.db_nm):
+        if re.match(self.county_level_db, self.db_nm):
             self.db_nm_county_year_month_dict = {
                 "county": db_nm_.split("_")[2],
                 "fips": db_nm_.split("_")[3],
@@ -79,7 +78,7 @@ class MovesDb:
                 "month_id": db_nm_.split("_")[5],
             }
             self.anaylsis_month = int(self.db_nm_county_year_month_dict["month_id"])
-        elif re.match(project_level_db, self.db_nm):
+        elif re.match(self.project_level_db, self.db_nm):
             self.db_nm_county_year_month_dict = {
                 "county": db_nm_.split("_")[2],
                 "fips": db_nm_.split("_")[3],
