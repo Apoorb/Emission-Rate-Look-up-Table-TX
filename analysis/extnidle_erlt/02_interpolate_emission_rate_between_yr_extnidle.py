@@ -50,9 +50,9 @@ if __name__ == "__main__":
     path_qaqc_py_after_yr_interpol = os.path.join(
         PATH_INTERIM_EXTNIDLE, "qacqc_py_yr_interpol_extnidle_erlt_intermediate.xlsx"
     )
-    # Connect to server to get running_erlt_intermediate data with data for only even
+    # Connect to server to get extnidle_erlt_intermediate data with data for only even
     # years between 2020 and 2050.
-    # TODO: Remove the Where Area = "El Paso" filter after running all runs.
+    # TODO: Remove the Where Area = "El Paso" filter after extnidle all runs.
     # raise ValueError("erlt_df_2014b_py should eventually contain all districts")
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
     erlt_df_2014b_py = pd.read_sql(
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # 2020 to 2050
     engine = get_engine_to_output_to_db(out_database="mvs2014b_erlt_out")
     erlt_df_2014b_py_yr_iterpolated.to_sql(
-        "running_erlt_intermediate_yr_interpolated",
+        "extnidle_erlt_intermediate_yr_interpolated",
         con=engine,
         if_exists="replace",
         index=False,
