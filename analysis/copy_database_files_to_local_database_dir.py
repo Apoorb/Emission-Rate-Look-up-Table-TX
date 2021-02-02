@@ -9,6 +9,7 @@ import operator
 import re
 from shutil import copytree
 from ttierlt.movesdb import MovesDb
+from ttierlt.utils import connect_to_server_db
 
 if __name__ == "__main__":
     mariadb_data_dir = r"C:\ProgramData\MariaDB\MariaDB 10.4\data"
@@ -16,12 +17,22 @@ if __name__ == "__main__":
     path_to_parent_dir = (r"C:\Users\A-Bibeka\Texas A&M Transportation Institute\HMP - "
                           r"HMP Active Projects\MOVES_ERLT_2019\rates")
     district_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
+    district_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw"]
+
     district_abb = "elp"
 
     county_files_pat = MovesDb.county_level_db.pattern
     # 'mvs14b_erlt_\\S{3}_\\d{5}_20\\d{2}_\\d{1,2}_cer_out'
     project_files_pat = MovesDb.project_level_db.pattern
     # 'mvs14b_erlt_\\S{3}_\\d{5}_20\\d{2}_per_out'
+
+    # Get list of already copied databases.
+    conn = connect_to_server_db("")
+    cur = conn.cursor()
+    cur.execute("SHOW DATABASES;")
+    already_copied_db = cur.fetchall()
+    already_copied_db = functools.reduce(operator.iconcat, already_copied_db, [])
+    conn.close()
 
     county_db_list = []
     for district_abb in district_abbs:
@@ -41,8 +52,9 @@ if __name__ == "__main__":
                                    "months")
         county_db_list.append(list_of_county_dir)
     county_db_list = functools.reduce(operator.iconcat, county_db_list, [])
-    assert (len(county_db_list) == 64 * 9), ("There should be 64 databases in each of"
-                                             " the 9 districts.")
+    assert (len(county_db_list) == 64 * len(district_abbs)), ("There should be 64 "
+                                                              "databases in each of the"
+                                                              " 9 districts.")
 
     project_db_path_list = []
     for district_abb in district_abbs:
@@ -65,11 +77,15 @@ if __name__ == "__main__":
                    r"Institute\Documents\Projects\ERLT\data\raw"
 
     project_db_path_list = functools.reduce(operator.iconcat, project_db_path_list, [])
-    assert (len(project_db_path_list) == 16 * 9), ("There should be 16 databases in"
-                                                   " each of the 9 districts.")
+    assert (len(project_db_path_list) == 16 * len(district_abbs)), ("There should be 16"
+                                                                    " databases in  "
+                                                                    "each of the 9 "
+                                                                    "districts.")
 
     for db_path in county_db_list:
         db_nm = os.path.basename(db_path)
+        if db_nm in already_copied_db:
+            continue
         print(f"Copying {db_nm}")
         copytree(
             src=db_path,
@@ -77,6 +93,8 @@ if __name__ == "__main__":
             dirs_exist_ok=True)
 
     for db_path in project_db_path_list:
+        if db_nm in already_copied_db:
+            continue
         db_nm = os.path.basename(db_path)
         print(f"Copying {db_nm}")
         copytree(
