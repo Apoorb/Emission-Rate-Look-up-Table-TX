@@ -39,7 +39,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = ["El Paso"]
+DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
 EXTNDIDLE_OUTPUT_DATASETS = [
     "extnidle_erlt_intermediate",
     "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
@@ -244,12 +244,12 @@ def test_unique_processtypes(get_erlt_extnidle_2014b_data_py):
     "get_erlt_extnidle_2014b_data_py, quantile_unique",
     [
         ({"data": data, "fil_county": [district]}, 0.95)
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in EXTNDIDLE_OUTPUT_DATASETS
     ],
     ids=[
         "--".join([data, district])
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in EXTNDIDLE_OUTPUT_DATASETS
     ],
     indirect=["get_erlt_extnidle_2014b_data_py"],
@@ -272,12 +272,12 @@ def test_unique_values_percent_unique_pollutants(
     "get_erlt_extnidle_2014b_data_py, min_val",
     [
         ({"data": data, "fil_county": [district]}, 1)
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in EXTNDIDLE_OUTPUT_DATASETS
     ],
     ids=[
         "--".join([data, district])
-        for district in DISTRICTS_ALL
+        for district in DISTRICTS_PRCSD
         for data in EXTNDIDLE_OUTPUT_DATASETS
     ],
     indirect=["get_erlt_extnidle_2014b_data_py"],

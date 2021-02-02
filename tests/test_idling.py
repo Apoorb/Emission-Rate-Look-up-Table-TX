@@ -39,7 +39,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = ["El Paso"]
+DISTRICTS_PRCSD = DISTRICTS_ALL[0:1]
 IDLING_OUTPUT_DATASETS = [
     "idling_erlt_intermediate",
     "idling_erlt_intermediate_yr_interpolated_no_monthid",

@@ -54,7 +54,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = ["El Paso"]
+DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
 STARTS_OUTPUT_DATASETS = [
     "starts_erlt_intermediate",
     "starts_erlt_intermediate_yr_interpolated_no_monthid",
@@ -199,6 +199,7 @@ def test_unique_groups_by_area_year_in_erlt_2014b_data(
     indirect=True,
 )
 def test_unique_yearid(get_erlt_starts_2014b_data_py):
+    assert set(range(2020, 2052, 2)) == set(get_erlt_starts_2014b_data_py.yearid)
     assert all(
         get_erlt_starts_2014b_data_py.groupby(
             ["Area", "monthid", "VehicleType", "FUELTYPE"]
@@ -211,7 +212,6 @@ def test_unique_yearid(get_erlt_starts_2014b_data_py):
         ).yearid.nunique()
         == 16
     )
-    assert set(range(2020, 2052, 2)) == set(get_erlt_starts_2014b_data_py.yearid)
 
 
 @pytest.mark.parametrize(
@@ -279,12 +279,15 @@ def test_unique_values_percent_unique_pollutants(
     num_unique_emmision_rates_pollutants = (
         get_erlt_starts_2014b_data_py[POLLUTANT_COLS].nunique().values
     )
+    expected_unique_rates_pollutants = get_erlt_starts_2014b_data_py[POLLUTANT_COLS].gt(
+        0).sum().values
+
     no_na_values = not any(np.ravel(get_erlt_starts_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_starts_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert all(num_unique_emmision_rates_pollutants
-               >= len(get_erlt_starts_2014b_data_py) * quantile_unique)
+    assert all(num_unique_emmision_rates_pollutants >= (expected_unique_rates_pollutants
+               * quantile_unique))
 
 
 @pytest.mark.parametrize(
