@@ -243,7 +243,7 @@ def test_unique_processtypes(get_erlt_extnidle_2014b_data_py):
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py, quantile_unique",
     [
-        ({"data": data, "fil_county": [district]}, 1)
+        ({"data": data, "fil_county": [district]}, 0.95)
         for district in DISTRICTS_ALL
         for data in EXTNDIDLE_OUTPUT_DATASETS
     ],
@@ -264,9 +264,8 @@ def test_unique_values_percent_unique_pollutants(
     no_empty_datasets = (len(get_erlt_extnidle_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert np.quantile(num_unique_emmision_rates_pollutants, quantile_unique) == len(
-        get_erlt_extnidle_2014b_data_py
-    )
+    assert all(num_unique_emmision_rates_pollutants
+               >= len(get_erlt_extnidle_2014b_data_py) * quantile_unique)
 
 
 @pytest.mark.parametrize(
