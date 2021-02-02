@@ -114,8 +114,10 @@ class ExtnidleSqlCmds(MovesDb):
             print(intererr)
             print(f"Try to recopy the {self.db_nm} from the shared drive.")
             print(f"Dropping the corrupted database: {self.db_nm} ")
-            logging.debug(f"Try to recopy the {self.db_nm} from the shared drive. "
-                          f"Dropping the corrupted database: {self.db_nm}")
+            logging.debug(
+                f"Try to recopy the {self.db_nm} from the shared drive. "
+                f"Dropping the corrupted database: {self.db_nm}"
+            )
             self.cur.execute(f"DROP DATABASE {self.db_nm}")
             self.close_conn()
             raise
@@ -123,8 +125,10 @@ class ExtnidleSqlCmds(MovesDb):
             print(operr)
             print(f"Try to recopy the {self.db_nm} from the shared drive.")
             print(f"Dropping the corrupted database: {self.db_nm} ")
-            logging.debug(f"Try to recopy the {self.db_nm} from the shared drive. "
-                          f"Dropping the corrupted database: {self.db_nm}")
+            logging.debug(
+                f"Try to recopy the {self.db_nm} from the shared drive. "
+                f"Dropping the corrupted database: {self.db_nm}"
+            )
             self.cur.execute(f"DROP DATABASE {self.db_nm}")
             self.close_conn()
             raise

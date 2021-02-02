@@ -12,6 +12,7 @@ import operator
 import datetime
 from ttierlt.utils import PATH_INTERIM_RUNNING, get_db_nm_list, connect_to_server_db
 from ttierlt.running.running_batch_sql import RunningSqlCmds as erltRunning
+
 RERUN_FROM_SCRATCH: bool = False
 # FixME: Add a the keyword: "running" at the top. Reuse it across the code. e.g
 #  PROCESS=running
@@ -24,8 +25,9 @@ if __name__ == "__main__":
         # Get already processed db_nm:
         conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT Area, yearid, monthid "
-                    "FROM running_erlt_intermediate")
+        cur.execute(
+            "SELECT DISTINCT Area, yearid, monthid " "FROM running_erlt_intermediate"
+        )
         already_processed_db = cur.fetchall()
         conn.close()
         del conn
@@ -49,8 +51,9 @@ if __name__ == "__main__":
     for db_nm in db_nms_list:
         erlt_running_obj = erltRunning(db_nm_=db_nm)
         db_nm_key = (
-            erlt_running_obj.area_district, erlt_running_obj.analysis_year,
-            erlt_running_obj.anaylsis_month
+            erlt_running_obj.area_district,
+            erlt_running_obj.analysis_year,
+            erlt_running_obj.anaylsis_month,
         )
         if db_nm_key in already_processed_db:
             erlt_running_obj.close_conn()

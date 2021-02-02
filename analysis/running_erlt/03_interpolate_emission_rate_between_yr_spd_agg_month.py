@@ -75,7 +75,7 @@ if __name__ == "__main__":
         "Fort Worth",
         "Houston",
         "Waco",
-        "San Antonio"
+        "San Antonio",
     )
     DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
     if len(DISTRICTS_PRCSD) == 1:
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     erlt_df_2014b_py = pd.read_sql(
         f"""SELECT * FROM running_erlt_intermediate 
         WHERE Area IN {DISTRICTS_PRCSD_SQL_SAFE}; """,
-        conn
+        conn,
     )
     conn.close()
     # Year Interpolation

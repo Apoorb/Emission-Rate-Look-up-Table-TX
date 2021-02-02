@@ -10,6 +10,7 @@ class MovesDb:
     """
     Common MOVES output database attributes and function.
     """
+
     county_level_db = re.compile(r"mvs14b_erlt_\S{3}_\d{5}_20\d{2}_\d{1,2}_cer_out")
     """
     County level database name example: mvs14b_erlt_elp_48141_2020_1_cer_out can be 
@@ -35,6 +36,7 @@ class MovesDb:
         per: Project level run 
         out: Output database
     """
+
     def __init__(self, db_nm_):
         self.moves2014b_db_nm = "movesdb20181022"
         # ref: https://www.tceq.texas.gov/assets/public/implementation/air/sip/texled/TXLED_Map.pdf

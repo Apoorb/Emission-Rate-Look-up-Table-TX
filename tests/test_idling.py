@@ -274,8 +274,10 @@ def test_unique_values_percent_unique_pollutants(
     no_empty_datasets = (len(get_erlt_idling_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert all(num_unique_emmision_rates_pollutants
-               >= len(get_erlt_idling_2014b_data_py) * quantile_unique)
+    assert all(
+        num_unique_emmision_rates_pollutants
+        >= len(get_erlt_idling_2014b_data_py) * quantile_unique
+    )
 
 
 @pytest.mark.parametrize(

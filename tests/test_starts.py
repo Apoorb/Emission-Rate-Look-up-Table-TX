@@ -279,15 +279,18 @@ def test_unique_values_percent_unique_pollutants(
     num_unique_emmision_rates_pollutants = (
         get_erlt_starts_2014b_data_py[POLLUTANT_COLS].nunique().values
     )
-    expected_unique_rates_pollutants = get_erlt_starts_2014b_data_py[POLLUTANT_COLS].gt(
-        0).sum().values
+    expected_unique_rates_pollutants = (
+        get_erlt_starts_2014b_data_py[POLLUTANT_COLS].gt(0).sum().values
+    )
 
     no_na_values = not any(np.ravel(get_erlt_starts_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_starts_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert all(num_unique_emmision_rates_pollutants >= (expected_unique_rates_pollutants
-               * quantile_unique))
+    assert all(
+        num_unique_emmision_rates_pollutants
+        >= (expected_unique_rates_pollutants * quantile_unique)
+    )
 
 
 @pytest.mark.parametrize(

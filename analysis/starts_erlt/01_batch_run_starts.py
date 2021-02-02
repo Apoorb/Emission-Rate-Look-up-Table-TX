@@ -13,6 +13,7 @@ import functools
 import operator
 from ttierlt.utils import PATH_INTERIM_STARTS, get_db_nm_list, connect_to_server_db
 from ttierlt.starts.starts_batch_sql import StartSqlCmds as erltStarts
+
 RERUN_FROM_SCRATCH: bool = False
 
 if __name__ == "__main__":
@@ -23,8 +24,9 @@ if __name__ == "__main__":
         # Get already processed db_nm:
         conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT Area, yearid, monthid "
-                    "FROM starts_erlt_intermediate")
+        cur.execute(
+            "SELECT DISTINCT Area, yearid, monthid " "FROM starts_erlt_intermediate"
+        )
         already_processed_db = cur.fetchall()
         conn.close()
         del conn
@@ -51,8 +53,9 @@ if __name__ == "__main__":
         ########################################################
         erlt_starts_obj = erltStarts(db_nm_=db_nm)
         db_nm_key = (
-            erlt_starts_obj.area_district, erlt_starts_obj.analysis_year,
-            erlt_starts_obj.anaylsis_month
+            erlt_starts_obj.area_district,
+            erlt_starts_obj.analysis_year,
+            erlt_starts_obj.anaylsis_month,
         )
         if db_nm_key in already_processed_db:
             erlt_starts_obj.close_conn()

@@ -12,6 +12,7 @@ import functools
 import operator
 from ttierlt.utils import PATH_INTERIM_EXTNIDLE, get_db_nm_list, connect_to_server_db
 from ttierlt.extnidle.extnidle_batch_sql import ExtnidleSqlCmds as erltExtnidle
+
 RERUN_FROM_SCRATCH: bool = False
 # FixME: Add a the keyword: "running" at the top. Reuse it across the code. e.g
 #  PROCESS=extnidle
@@ -24,8 +25,9 @@ if __name__ == "__main__":
         # Get already processed db_nm:
         conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT Area, yearid, monthid "
-                    "FROM extnidle_erlt_intermediate")
+        cur.execute(
+            "SELECT DISTINCT Area, yearid, monthid " "FROM extnidle_erlt_intermediate"
+        )
         already_processed_db = cur.fetchall()
         conn.close()
         del conn
@@ -41,7 +43,8 @@ if __name__ == "__main__":
     path_log_file = os.path.join(path_to_log_dir, logfilenm)
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
     logfilenm_debug = datetime.datetime.now().strftime(
-        "extnidle_debug_%H_%M_%d_%m_%Y.log")
+        "extnidle_debug_%H_%M_%d_%m_%Y.log"
+    )
     path_err_log_file = os.path.join(path_to_log_dir, logfilenm_debug)
     logging.basicConfig(filename=path_err_log_file, filemode="w", level=logging.DEBUG)
 
@@ -57,8 +60,9 @@ if __name__ == "__main__":
     for db_nm in db_nms_list:
         erlt_extnidle_obj = erltExtnidle(db_nm_=db_nm)
         db_nm_key = (
-            erlt_extnidle_obj.area_district, erlt_extnidle_obj.analysis_year,
-            erlt_extnidle_obj.anaylsis_month
+            erlt_extnidle_obj.area_district,
+            erlt_extnidle_obj.analysis_year,
+            erlt_extnidle_obj.anaylsis_month,
         )
         if db_nm_key in already_processed_db:
             erlt_extnidle_obj.close_conn()

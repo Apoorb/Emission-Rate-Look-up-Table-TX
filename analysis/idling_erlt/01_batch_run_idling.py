@@ -12,6 +12,7 @@ import functools
 import operator
 from ttierlt.utils import PATH_INTERIM_IDLING, get_db_nm_list, connect_to_server_db
 from ttierlt.idling.idling_batch_sql import IdlingSqlCmds as erltIdling
+
 RERUN_FROM_SCRATCH: bool = False
 # FixME: Add a the keyword: "running" at the top. Reuse it across the code. e.g
 #  PROCESS=idling
@@ -24,8 +25,7 @@ if __name__ == "__main__":
         # Get already processed db_nm:
         conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT Area, yearid"
-                    " FROM idling_erlt_intermediate")
+        cur.execute("SELECT DISTINCT Area, yearid" " FROM idling_erlt_intermediate")
         already_processed_db = cur.fetchall()
         conn.close()
         del conn
@@ -50,8 +50,7 @@ if __name__ == "__main__":
 
     for db_nm in db_nms_list:
         erlt_idling_obj = erltIdling(db_nm_=db_nm)
-        db_nm_key = (
-            erlt_idling_obj.area_district, erlt_idling_obj.analysis_year)
+        db_nm_key = (erlt_idling_obj.area_district, erlt_idling_obj.analysis_year)
         if db_nm_key in already_processed_db:
             erlt_idling_obj.close_conn()
             del erlt_idling_obj

@@ -285,7 +285,7 @@ def test_unique_monthid(get_erlt_running_2014b_data_py):
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py, quantile_unique",
     [
-        ({"data": data, "fil_county": [district]}, .95)
+        ({"data": data, "fil_county": [district]}, 0.95)
         for district in DISTRICTS_PRCSD
         for data in RUNNING_OUTPUT_DATASETS
     ],
@@ -306,8 +306,10 @@ def test_unique_values_percent_unique_pollutants(
     no_empty_datasets = (len(get_erlt_running_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert all(num_unique_emmision_rates_pollutants
-               >= len(get_erlt_running_2014b_data_py) * quantile_unique)
+    assert all(
+        num_unique_emmision_rates_pollutants
+        >= len(get_erlt_running_2014b_data_py) * quantile_unique
+    )
 
 
 @pytest.mark.parametrize(

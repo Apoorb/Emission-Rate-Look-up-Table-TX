@@ -63,7 +63,7 @@ if __name__ == "__main__":
         "Fort Worth",
         "Houston",
         "Waco",
-        "San Antonio"
+        "San Antonio",
     )
     DISTRICTS_PRCSD = DISTRICTS_ALL[0:1]
     if len(DISTRICTS_PRCSD) == 1:
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     erlt_df_2014b_py = pd.read_sql(
         f"""SELECT * FROM idling_erlt_intermediate 
         WHERE Area IN {DISTRICTS_PRCSD_SQL_SAFE}; """,
-        conn
+        conn,
     )
     conn.close()
     # Year Interpolation
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     # Get pivot table to manually interpolate by year---emission rates in excel.
     qaqc_manual_yr_befor_interpol = pivot_df_reindex_for_qaqc(
         data=erlt_df_2014b_py,
-        pivot_index=["Area", "monthid", 'hourid', 'period'],
-        pivot_column="yearid"
+        pivot_index=["Area", "monthid", "hourid", "period"],
+        pivot_column="yearid",
     )
     qaqc_manual_yr_befor_interpol.to_excel(path_qaqc_manual_before_yr_interpol)
     # Get the linearly interpolated values for interpol_vals: year 2020 to 2050
@@ -101,8 +101,8 @@ if __name__ == "__main__":
     # year 2020 to 2050.
     qaqc_data_yr_interpolated = pivot_df_reindex_for_qaqc(
         data=erlt_df_2014b_py_yr_iterpolated,
-        pivot_index=["Area", "monthid", 'hourid', 'period'],
-        pivot_column="yearid"
+        pivot_index=["Area", "monthid", "hourid", "period"],
+        pivot_column="yearid",
     )
     qaqc_data_yr_interpolated.to_excel(path_qaqc_py_after_yr_interpol)
     # Remove months---Aggregate over year---take the max emission rate for the year
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     ###################################################################################
     erlt_df_2014b_py_yr_iterpolated_agg = agg_rates_over_yr(
         data=erlt_df_2014b_py_yr_iterpolated,
-        grpby_cols=["Area", "yearid", 'hourid', 'period'],
+        grpby_cols=["Area", "yearid", "hourid", "period"],
         pollutant_cols=POLLUTANT_COLS,
         agg_func="max",
     )
@@ -123,4 +123,3 @@ if __name__ == "__main__":
         if_exists="replace",
         index=False,
     )
-
