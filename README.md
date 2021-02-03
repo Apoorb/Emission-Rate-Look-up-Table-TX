@@ -4,6 +4,22 @@ Emission-Rate-Look-up-Table-TX
 Batch process MOVES output files to get condensed emission rate look-up tables for different districts and years.
 Get emission four different processes: running, starts, extended idling, and idling.
 
+## 1. Setup
+
+**Connecting to the database**: The connect_to_server_db function provides the 
+ability to connect to different 
+databases saved in MariaDB. It takes database name (database_nm), user name (user_nm;
+default is "root") as arguments. It looks for the password in the .env file. The 
+password is kept in .env file to keep it hidden.
+
+## 2. Analysis Work Flow
+
+## 3. Testing
+
+## 4. Future Improvements
+
+
+
 Project Organization
 ------------
 
