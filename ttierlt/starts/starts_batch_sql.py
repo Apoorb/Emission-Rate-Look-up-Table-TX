@@ -91,18 +91,41 @@ class StartSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("DROP TABLE  IF EXISTS startrate;")
+        try:
         # FixMe: Make the pollutants a user entered parameter for the class
-        self.cur.execute(
+            self.cur.execute(
+                """
+                CREATE TABLE startrate (SELECT yearid, monthid,hourid,
+                pollutantid,sourcetypeid,fueltypeid,sum(rateperstart)as ERate 
+                FROM rateperstart
+                WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,
+                41,68, 69,70,71, 72, 73, 74, 75, 76, 77, 78, 81, 82, 83, 84, 168, 169, 
+                170, 171, 172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184)
+                GROUP BY yearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid);
             """
-            CREATE TABLE startrate (SELECT yearid, monthid,hourid,
-            pollutantid,sourcetypeid,fueltypeid,sum(rateperstart)as ERate 
-            FROM rateperstart
-            WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,41,68, 
-            69,70,71, 72, 73, 74, 75, 76, 77, 78, 81, 82, 83, 84, 168, 169, 170, 171, 
-            172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184)
-            GROUP BY yearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid);
-        """
-        )
+            )
+        except mariadb.InternalError as intererr:
+            print(intererr)
+            print(f"Try to recopy the {self.db_nm} from the shared drive.")
+            print(f"Dropping the corrupted database: {self.db_nm} ")
+            logging.debug(
+                f"Try to recopy the {self.db_nm} from the shared drive. "
+                f"Dropping the corrupted database: {self.db_nm}"
+            )
+            self.cur.execute(f"DROP DATABASE {self.db_nm}")
+            self.close_conn()
+            raise
+        except mariadb.OperationalError as operr:
+            print(operr)
+            print(f"Try to recopy the {self.db_nm} from the shared drive.")
+            print(f"Dropping the corrupted database: {self.db_nm} ")
+            logging.debug(
+                f"Try to recopy the {self.db_nm} from the shared drive. "
+                f"Dropping the corrupted database: {self.db_nm}"
+            )
+            self.cur.execute(f"DROP DATABASE {self.db_nm}")
+            self.close_conn()
+            raise
         self._update_startrate_rateperstart()
         self._update_sourcetypename_joins()
         logging.info(

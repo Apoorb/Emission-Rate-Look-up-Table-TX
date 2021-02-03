@@ -98,16 +98,40 @@ class IdlingSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE  IF EXISTS idlerate;")
-        # FixMe: Make the pollutants a user entered parameter for the class
-        self.cur.execute(
-            """--
-        CREATE TABLE idlerate (SELECT yearid, monthid,hourid,countyid,
-        linkid,pollutantid,sourcetypeid,fueltypeid,sum(emissionquant)as emission 
-        FROM movesoutput
-        GROUP BY yearid,monthid,hourid,countyid,roadtypeid,linkid,pollutantid,
-        sourcetypeid,fueltypeid);
-        """
-        )
+        try:
+            # FixMe: Make the pollutants a user entered parameter for the class
+            self.cur.execute(
+                """--
+            CREATE TABLE idlerate (SELECT yearid, monthid,hourid,countyid,
+            linkid,pollutantid,sourcetypeid,fueltypeid,sum(emissionquant)as emission 
+            FROM movesoutput
+            GROUP BY yearid,monthid,hourid,countyid,roadtypeid,linkid,pollutantid,
+            sourcetypeid,fueltypeid);
+            """
+            )
+        except mariadb.InternalError as intererr:
+            print(intererr)
+            print(f"Try to recopy the {self.db_nm} from the shared drive.")
+            print(f"Dropping the corrupted database: {self.db_nm} ")
+            logging.debug(
+                f"Try to recopy the {self.db_nm} from the shared drive. "
+                f"Dropping the corrupted database: {self.db_nm}"
+            )
+            self.cur.execute(f"DROP DATABASE {self.db_nm}")
+            self.close_conn()
+            raise
+        except mariadb.OperationalError as operr:
+            print(operr)
+            print(f"Try to recopy the {self.db_nm} from the shared drive.")
+            print(f"Dropping the corrupted database: {self.db_nm} ")
+            logging.debug(
+                f"Try to recopy the {self.db_nm} from the shared drive. "
+                f"Dropping the corrupted database: {self.db_nm}"
+            )
+            self.cur.execute(f"DROP DATABASE {self.db_nm}")
+            self.close_conn()
+            raise
+
         self._update_idlerate_movesoutput()
         logging.info(
             "---aggregate_idlerate_movesoutput and _update_idlerate_movesoutput "
