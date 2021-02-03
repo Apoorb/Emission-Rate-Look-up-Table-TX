@@ -328,3 +328,19 @@ def test_unique_values_percent_unique_pollutants(
 )
 def test_min_values_over_zero_pollutants(get_erlt_running_2014b_data_py, min_val):
     assert all(get_erlt_running_2014b_data_py[POLLUTANT_COLS].min() >= 0)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_running_2014b_data_py",
+    [
+        {"data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
+         "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_correct_num_val_in_final_df(get_erlt_running_2014b_data_py):
+    assert get_erlt_running_2014b_data_py.groupby(
+        ["Area", "yearid", "funclass", "avgspeed"]).ngroups == (2050 - 2020 + 1) * 4 \
+           * len(set([2.5] + list(range(3, 76, 1))))

@@ -39,7 +39,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
+DISTRICTS_PRCSD = DISTRICTS_ALL
 EXTNDIDLE_OUTPUT_DATASETS = [
     "extnidle_erlt_intermediate",
     "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
@@ -258,7 +258,12 @@ def test_unique_values_percent_unique_pollutants(
     get_erlt_extnidle_2014b_data_py, quantile_unique
 ):
     num_unique_emmision_rates_pollutants = (
-        get_erlt_extnidle_2014b_data_py[POLLUTANT_COLS].nunique().values
+        get_erlt_extnidle_2014b_data_py.loc[
+            lambda df: df.Processtype == "Extnd_Exhaust", POLLUTANT_COLS].nunique(
+    ).values)
+    expected_unique_vals = len(
+        get_erlt_extnidle_2014b_data_py.loc[
+            lambda df: df.Processtype == "Extnd_Exhaust"]
     )
     no_na_values = not any(np.ravel(get_erlt_extnidle_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_extnidle_2014b_data_py)) > 0
@@ -266,7 +271,7 @@ def test_unique_values_percent_unique_pollutants(
     assert no_na_values
     assert all(
         num_unique_emmision_rates_pollutants
-        >= len(get_erlt_extnidle_2014b_data_py) * quantile_unique
+        >= (expected_unique_vals * quantile_unique)
     )
 
 
@@ -286,3 +291,18 @@ def test_unique_values_percent_unique_pollutants(
 )
 def test_min_values_over_zero_pollutants(get_erlt_extnidle_2014b_data_py, min_val):
     assert all(get_erlt_extnidle_2014b_data_py[POLLUTANT_COLS].min() >= 0)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py",
+    [
+        {"data": "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
+         "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_correct_num_val_in_final_df(get_erlt_extnidle_2014b_data_py):
+    assert get_erlt_extnidle_2014b_data_py.groupby(
+        ["Area", "yearid", "Processtype"]).ngroups == (2050 - 2020 + 1) * 2

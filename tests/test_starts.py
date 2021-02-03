@@ -54,7 +54,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
+DISTRICTS_PRCSD = DISTRICTS_ALL
 STARTS_OUTPUT_DATASETS = [
     "starts_erlt_intermediate",
     "starts_erlt_intermediate_yr_interpolated_no_monthid",
@@ -279,10 +279,10 @@ def test_unique_values_percent_unique_pollutants(
     num_unique_emmision_rates_pollutants = (
         get_erlt_starts_2014b_data_py[POLLUTANT_COLS].nunique().values
     )
+    # Ignore the duplicate 0s.
     expected_unique_rates_pollutants = (
         get_erlt_starts_2014b_data_py[POLLUTANT_COLS].gt(0).sum().values
     )
-
     no_na_values = not any(np.ravel(get_erlt_starts_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_starts_2014b_data_py)) > 0
     assert no_empty_datasets
@@ -309,3 +309,19 @@ def test_unique_values_percent_unique_pollutants(
 )
 def test_min_values_over_zero_pollutants(get_erlt_starts_2014b_data_py, min_val):
     assert all(get_erlt_starts_2014b_data_py[POLLUTANT_COLS].min() >= 0)
+
+
+@pytest.mark.parametrize(
+    "get_erlt_starts_2014b_data_py",
+    [
+        {"data": "starts_erlt_intermediate_yr_interpolated_no_monthid",
+         "fil_county": [district]}
+        for district in DISTRICTS_PRCSD
+    ],
+    ids=[district for district in DISTRICTS_PRCSD],
+    indirect=True,
+)
+def test_correct_num_val_in_final_df(get_erlt_starts_2014b_data_py):
+    assert get_erlt_starts_2014b_data_py.groupby(
+        ["Area", "yearid", "VehicleType", "FUELTYPE"]).ngroups == (2050 - 2020 + 1) \
+           * 22 # Number of unique fuel and vehicle type combo
