@@ -19,8 +19,6 @@ if __name__ == "__main__":
         r"HMP Active Projects\MOVES_ERLT_2019\rates"
     )
     district_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
-    district_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw"]
-
     district_abb = "elp"
 
     county_files_pat = MovesDb.county_level_db.pattern
@@ -100,9 +98,9 @@ if __name__ == "__main__":
         )
 
     for db_path in project_db_path_list:
+        db_nm = os.path.basename(db_path)
         if db_nm in already_copied_db:
             continue
-        db_nm = os.path.basename(db_path)
         print(f"Copying {db_nm}")
         copytree(
             src=db_path, dst=os.path.join(mariadb_data_dir, db_nm), dirs_exist_ok=True
