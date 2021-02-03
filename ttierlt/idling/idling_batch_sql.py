@@ -98,6 +98,7 @@ class IdlingSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE  IF EXISTS idlerate;")
+        # FixMe: Make the pollutants a user entered parameter for the class
         self.cur.execute(
             """--
         CREATE TABLE idlerate (SELECT yearid, monthid,hourid,countyid,

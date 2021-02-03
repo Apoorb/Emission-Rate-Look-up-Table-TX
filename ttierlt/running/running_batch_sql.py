@@ -91,6 +91,7 @@ class RunningSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE  IF EXISTS emisrate;")
+        # FixMe: Make the pollutants a user entered parameter for the class
         self.cur.execute(
             f"""
             CREATE TABLE emisrate (SELECT yearid,monthid,hourid,

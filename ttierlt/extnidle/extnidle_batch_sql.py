@@ -96,6 +96,7 @@ class ExtnidleSqlCmds(MovesDb):
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("DROP TABLE  IF EXISTS Extnidlerate;")
         try:
+            # FixMe: Make the pollutants a user entered parameter for the class
             self.cur.execute(
                 f"""
                 CREATE TABLE Extnidlerate

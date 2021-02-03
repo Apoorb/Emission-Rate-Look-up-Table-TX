@@ -91,6 +91,7 @@ class StartSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("DROP TABLE  IF EXISTS startrate;")
+        # FixMe: Make the pollutants a user entered parameter for the class
         self.cur.execute(
             """
             CREATE TABLE startrate (SELECT yearid, monthid,hourid,
