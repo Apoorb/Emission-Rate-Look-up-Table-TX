@@ -33,7 +33,7 @@ TEMPLATE_DB_NM = "mvs14b_erlt_elp_48141_2020_1_cer_out"  # Database used for dev
 # name would be replaced by other database name as we iterate over the different databases.
 
 
-def connect_to_server_db(database_nm):
+def connect_to_server_db(database_nm, user_nm="root"):
     """
     Function to connect to a particular database on the server.
     Returns
@@ -48,7 +48,7 @@ def connect_to_server_db(database_nm):
     # Connect to MariaDB Platform
     try:
         conn_ = mariadb.connect(
-            user="root",
+            user=user_nm,
             password=os.environ.get("MARIA_DB_PASSWORD"),
             host="127.0.0.1",
             port=3306,
