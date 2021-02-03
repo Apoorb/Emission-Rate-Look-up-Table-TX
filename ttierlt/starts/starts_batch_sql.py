@@ -91,10 +91,7 @@ class StartSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute("DROP TABLE  IF EXISTS startrate;")
-        try:
-        # FixMe: Make the pollutants a user entered parameter for the class
-            self.cur.execute(
-                """
+        cmd_agg_startrate = """
                 CREATE TABLE startrate (SELECT yearid, monthid,hourid,
                 pollutantid,sourcetypeid,fueltypeid,sum(rateperstart)as ERate 
                 FROM rateperstart
@@ -103,29 +100,17 @@ class StartSqlCmds(MovesDb):
                 170, 171, 172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184)
                 GROUP BY yearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid);
             """
-            )
+        try:
+        # FixMe: Make the pollutants a user entered parameter for the class
+            self.cur.execute(cmd_agg_startrate)
         except mariadb.InternalError as intererr:
-            print(intererr)
-            print(f"Try to recopy the {self.db_nm} from the shared drive.")
-            print(f"Dropping the corrupted database: {self.db_nm} ")
-            logging.debug(
-                f"Try to recopy the {self.db_nm} from the shared drive. "
-                f"Dropping the corrupted database: {self.db_nm}"
-            )
-            self.cur.execute(f"DROP DATABASE {self.db_nm}")
-            self.close_conn()
-            raise
+            self.cur.execute("REPAIR TABLE rateperstart")
+            self.cur.execute(cmd_agg_startrate)
+
         except mariadb.OperationalError as operr:
-            print(operr)
-            print(f"Try to recopy the {self.db_nm} from the shared drive.")
-            print(f"Dropping the corrupted database: {self.db_nm} ")
-            logging.debug(
-                f"Try to recopy the {self.db_nm} from the shared drive. "
-                f"Dropping the corrupted database: {self.db_nm}"
-            )
-            self.cur.execute(f"DROP DATABASE {self.db_nm}")
-            self.close_conn()
-            raise
+            self.cur.execute("REPAIR TABLE rateperstart")
+            self.cur.execute(cmd_agg_startrate)
+
         self._update_startrate_rateperstart()
         self._update_sourcetypename_joins()
         logging.info(

@@ -91,10 +91,7 @@ class RunningSqlCmds(MovesDb):
         start_time = time.time()
         self.cur.execute("FLUSH TABLES;")
         self.cur.execute(f"DROP TABLE  IF EXISTS emisrate;")
-        try:
-            # FixMe: Make the pollutants a user entered parameter for the class
-            self.cur.execute(
-                f"""
+        agg_emisrate_cmd = f"""
                 CREATE TABLE emisrate (SELECT yearid,monthid,hourid,
                 roadtypeid,pollutantid,sourcetypeid,fueltypeid,avgSpeedBinID,
                 SUM(rateperdistance) as ERate 
@@ -106,29 +103,15 @@ class RunningSqlCmds(MovesDb):
                 GROUP BY yearid,monthid,hourid,roadtypeid,pollutantid,sourcetypeid,
                 fueltypeid,avgSpeedBinID);
                 """
-            )
+        try:
+            # FixMe: Make the pollutants a user entered parameter for the class
+            self.cur.execute(agg_emisrate_cmd)
         except mariadb.InternalError as intererr:
-            print(intererr)
-            print(f"Try to recopy the {self.db_nm} from the shared drive.")
-            print(f"Dropping the corrupted database: {self.db_nm} ")
-            logging.debug(
-                f"Try to recopy the {self.db_nm} from the shared drive. "
-                f"Dropping the corrupted database: {self.db_nm}"
-            )
-            self.cur.execute(f"DROP DATABASE {self.db_nm}")
-            self.close_conn()
-            raise
+            self.cur.execute("REPAIR TABLE rateperdistance")
+            self.cur.execute(agg_emisrate_cmd)
         except mariadb.OperationalError as operr:
-            print(operr)
-            print(f"Try to recopy the {self.db_nm} from the shared drive.")
-            print(f"Dropping the corrupted database: {self.db_nm} ")
-            logging.debug(
-                f"Try to recopy the {self.db_nm} from the shared drive. "
-                f"Dropping the corrupted database: {self.db_nm}"
-            )
-            self.cur.execute(f"DROP DATABASE {self.db_nm}")
-            self.close_conn()
-            raise
+            self.cur.execute("REPAIR TABLE rateperdistance")
+            self.cur.execute(agg_emisrate_cmd)
 
         self._update_emisrate_rateperdist()
         logging.info(
