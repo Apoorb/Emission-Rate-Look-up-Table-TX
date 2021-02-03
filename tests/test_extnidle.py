@@ -243,7 +243,7 @@ def test_unique_processtypes(get_erlt_extnidle_2014b_data_py):
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py, quantile_unique",
     [
-        ({"data": data, "fil_county": [district]}, 0.95)
+        ({"data": data, "fil_county": [district]}, 1)
         for district in DISTRICTS_PRCSD
         for data in EXTNDIDLE_OUTPUT_DATASETS
     ],
@@ -257,19 +257,20 @@ def test_unique_processtypes(get_erlt_extnidle_2014b_data_py):
 def test_unique_values_percent_unique_pollutants(
     get_erlt_extnidle_2014b_data_py, quantile_unique
 ):
+    # Only checking for POM pollutant as it seems to be the only pollutant with
+    # unique values across different catgories.
     num_unique_emmision_rates_pollutants = (
         get_erlt_extnidle_2014b_data_py.loc[
-            lambda df: df.Processtype == "Extnd_Exhaust", POLLUTANT_COLS].nunique(
-    ).values)
+            lambda df: df.Processtype == "Extnd_Exhaust", "POM"].nunique())
     expected_unique_vals = len(
         get_erlt_extnidle_2014b_data_py.loc[
-            lambda df: df.Processtype == "Extnd_Exhaust"]
+            lambda df: df.Processtype == "Extnd_Exhaust", "POM"]
     )
     no_na_values = not any(np.ravel(get_erlt_extnidle_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_extnidle_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert all(
+    assert (
         num_unique_emmision_rates_pollutants
         >= (expected_unique_vals * quantile_unique)
     )
