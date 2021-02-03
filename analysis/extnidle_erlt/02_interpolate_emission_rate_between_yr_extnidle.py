@@ -66,7 +66,7 @@ if __name__ == "__main__":
         "Waco",
         "San Antonio",
     )
-    DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
+    DISTRICTS_PRCSD = DISTRICTS_ALL
     if len(DISTRICTS_PRCSD) == 1:
         DISTRICTS_PRCSD_TP = list(DISTRICTS_PRCSD)
         DISTRICTS_PRCSD_TP.append("HACK_FOR_WHERE_SQL")
@@ -97,6 +97,14 @@ if __name__ == "__main__":
             "interpol_vals": list(np.arange(2020, 2051, 1)),
             "grpby_cols": ["Area", "monthid", "Processtype"],
         },
+    )
+    # Output year interpolated table
+    engine = get_engine_to_output_to_db(out_database="mvs2014b_erlt_out")
+    erlt_df_2014b_py_yr_iterpolated.to_sql(
+        "extnidle_erlt_intermediate_yr_interpolated",
+        con=engine,
+        if_exists="replace",
+        index=False,
     )
     # Get pivot table of the data with linearly interpolated values for interpol_vals:
     # year 2020 to 2050.
