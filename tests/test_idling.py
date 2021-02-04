@@ -264,17 +264,17 @@ def test_unique_periods(get_erlt_idling_2014b_data_py):
     ],
     indirect=["get_erlt_idling_2014b_data_py"],
 )
-def test_some_pollutants_unique(
-    get_erlt_idling_2014b_data_py, quantile_unique
-):
+def test_some_pollutants_unique(get_erlt_idling_2014b_data_py, quantile_unique):
     # PM2.5, PM 10, DPM only have 170, 170 64 unqiue values in
     # idling_erlt_intermediatee but other pollutants seem
     # to have unique emission rates implying that the processing was okay.
     # Only check pollutants that are likely to have unique emission rates.
     num_unique_emmision_rates_pollutants = (
         get_erlt_idling_2014b_data_py[
-            [col for col in ["NOX","NO2", "VOC", "BENZ", "NAPTH", "POM"]]
-        ].nunique().values
+            [col for col in ["NOX", "NO2", "VOC", "BENZ", "NAPTH", "POM"]]
+        ]
+        .nunique()
+        .values
     )
     no_na_values = not any(np.ravel(get_erlt_idling_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_idling_2014b_data_py)) > 0
@@ -307,13 +307,16 @@ def test_min_values_over_zero_pollutants(get_erlt_idling_2014b_data_py, min_val)
 @pytest.mark.parametrize(
     "get_erlt_idling_2014b_data_py",
     [
-        {"data": "idling_erlt_intermediate_yr_interpolated_no_monthid",
-         "fil_county": [district]}
+        {
+            "data": "idling_erlt_intermediate_yr_interpolated_no_monthid",
+            "fil_county": [district],
+        }
         for district in DISTRICTS_PRCSD
     ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_correct_num_val_in_final_df(get_erlt_idling_2014b_data_py):
-    assert get_erlt_idling_2014b_data_py.groupby(
-        ["Area", "yearid"]).ngroups == (2050 - 2020 + 1)
+    assert get_erlt_idling_2014b_data_py.groupby(["Area", "yearid"]).ngroups == (
+        2050 - 2020 + 1
+    )

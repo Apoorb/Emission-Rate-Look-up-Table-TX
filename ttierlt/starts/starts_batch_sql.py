@@ -101,7 +101,7 @@ class StartSqlCmds(MovesDb):
                 GROUP BY yearid,monthid,hourid,pollutantid,sourcetypeid,fueltypeid);
             """
         try:
-        # FixMe: Make the pollutants a user entered parameter for the class
+            # FixMe: Make the pollutants a user entered parameter for the class
             self.cur.execute(cmd_agg_startrate)
         except mariadb.InternalError as intererr:
             self.cur.execute("REPAIR TABLE rateperstart")

@@ -333,8 +333,10 @@ def test_min_values_over_zero_pollutants(get_erlt_running_2014b_data_py, min_val
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py",
     [
-        {"data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
-         "fil_county": [district]}
+        {
+            "data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
+            "fil_county": [district],
+        }
         for district in DISTRICTS_PRCSD
     ],
     ids=[district for district in DISTRICTS_PRCSD],
@@ -342,5 +344,5 @@ def test_min_values_over_zero_pollutants(get_erlt_running_2014b_data_py, min_val
 )
 def test_correct_num_val_in_final_df(get_erlt_running_2014b_data_py):
     assert get_erlt_running_2014b_data_py.groupby(
-        ["Area", "yearid", "funclass", "avgspeed"]).ngroups == (2050 - 2020 + 1) * 4 \
-           * len(set([2.5] + list(range(3, 76, 1))))
+        ["Area", "yearid", "funclass", "avgspeed"]
+    ).ngroups == (2050 - 2020 + 1) * 4 * len(set([2.5] + list(range(3, 76, 1))))

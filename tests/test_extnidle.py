@@ -259,20 +259,20 @@ def test_unique_values_percent_unique_pollutants(
 ):
     # Only checking for POM pollutant as it seems to be the only pollutant with
     # unique values across different catgories.
-    num_unique_emmision_rates_pollutants = (
-        get_erlt_extnidle_2014b_data_py.loc[
-            lambda df: df.Processtype == "Extnd_Exhaust", "POM"].nunique())
+    num_unique_emmision_rates_pollutants = get_erlt_extnidle_2014b_data_py.loc[
+        lambda df: df.Processtype == "Extnd_Exhaust", "POM"
+    ].nunique()
     expected_unique_vals = len(
         get_erlt_extnidle_2014b_data_py.loc[
-            lambda df: df.Processtype == "Extnd_Exhaust", "POM"]
+            lambda df: df.Processtype == "Extnd_Exhaust", "POM"
+        ]
     )
     no_na_values = not any(np.ravel(get_erlt_extnidle_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_extnidle_2014b_data_py)) > 0
     assert no_empty_datasets
     assert no_na_values
-    assert (
-        num_unique_emmision_rates_pollutants
-        >= (expected_unique_vals * quantile_unique)
+    assert num_unique_emmision_rates_pollutants >= (
+        expected_unique_vals * quantile_unique
     )
 
 
@@ -297,13 +297,19 @@ def test_min_values_over_zero_pollutants(get_erlt_extnidle_2014b_data_py, min_va
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py",
     [
-        {"data": "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
-         "fil_county": [district]}
+        {
+            "data": "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
+            "fil_county": [district],
+        }
         for district in DISTRICTS_PRCSD
     ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_correct_num_val_in_final_df(get_erlt_extnidle_2014b_data_py):
-    assert get_erlt_extnidle_2014b_data_py.groupby(
-        ["Area", "yearid", "Processtype"]).ngroups == (2050 - 2020 + 1) * 2
+    assert (
+        get_erlt_extnidle_2014b_data_py.groupby(
+            ["Area", "yearid", "Processtype"]
+        ).ngroups
+        == (2050 - 2020 + 1) * 2
+    )

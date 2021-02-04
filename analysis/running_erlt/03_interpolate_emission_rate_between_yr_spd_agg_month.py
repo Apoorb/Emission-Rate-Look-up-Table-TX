@@ -116,7 +116,7 @@ if __name__ == "__main__":
         con=engine,
         if_exists="replace",
         index=False,
-        chunksize=10000
+        chunksize=10000,
     )
     # Get pivot table of the data with linearly interpolated values for interpol_vals:
     # year 2020 to 2050.
@@ -163,7 +163,7 @@ if __name__ == "__main__":
         con=engine,
         if_exists="replace",
         index=False,
-        chunksize=10000
+        chunksize=10000,
     )
     qaqc_data_yr_iterpolated_spd_interpolated = pivot_df_reindex_for_qaqc(
         data=erlt_df_2014b_py_yr_iterpolated_spd_interpolated,

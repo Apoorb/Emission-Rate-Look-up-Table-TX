@@ -277,13 +277,30 @@ def test_unique_values_percent_unique_pollutants(
     get_erlt_starts_2014b_data_py, quantile_unique
 ):
     # Only check pollutants that show variation.
-    pollutants_that_have_unique_emissions = ["SO2", "CO2EQ", "VOC",'BENZ', 'NAPTH', 'BUTA', 'FORM', 'ACTE', 'ACROL', 'ETYB', 'POM']
+    pollutants_that_have_unique_emissions = [
+        "SO2",
+        "CO2EQ",
+        "VOC",
+        "BENZ",
+        "NAPTH",
+        "BUTA",
+        "FORM",
+        "ACTE",
+        "ACROL",
+        "ETYB",
+        "POM",
+    ]
     num_unique_emmision_rates_pollutants = (
-        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions].nunique().values
+        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions]
+        .nunique()
+        .values
     )
     # Ignore the duplicate 0s.
     expected_unique_rates_pollutants = (
-        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions].gt(0).sum().values
+        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions]
+        .gt(0)
+        .sum()
+        .values
     )
     no_na_values = not any(np.ravel(get_erlt_starts_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_starts_2014b_data_py)) > 0
@@ -316,14 +333,19 @@ def test_min_values_over_zero_pollutants(get_erlt_starts_2014b_data_py, min_val)
 @pytest.mark.parametrize(
     "get_erlt_starts_2014b_data_py",
     [
-        {"data": "starts_erlt_intermediate_yr_interpolated_no_monthid",
-         "fil_county": [district]}
+        {
+            "data": "starts_erlt_intermediate_yr_interpolated_no_monthid",
+            "fil_county": [district],
+        }
         for district in DISTRICTS_PRCSD
     ],
     ids=[district for district in DISTRICTS_PRCSD],
     indirect=True,
 )
 def test_correct_num_val_in_final_df(get_erlt_starts_2014b_data_py):
-    assert get_erlt_starts_2014b_data_py.groupby(
-        ["Area", "yearid", "VehicleType", "FUELTYPE"]).ngroups == (2050 - 2020 + 1) \
-           * 22 # Number of unique fuel and vehicle type combo
+    assert (
+        get_erlt_starts_2014b_data_py.groupby(
+            ["Area", "yearid", "VehicleType", "FUELTYPE"]
+        ).ngroups
+        == (2050 - 2020 + 1) * 22
+    )  # Number of unique fuel and vehicle type combo
