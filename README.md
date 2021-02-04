@@ -16,7 +16,11 @@ password is kept in .env file to keep it hidden.
 
 ## 3. Testing
 
-## 4. Future Improvements
+## 4. Caveats
+**to_sql** will sometimes throw operational error when the ouptut database is large 
+(e.g. 70,000 rows). Add a chunksize parameter with chunksize = 10,000 to make it work.
+
+## 5. Future Improvements
 
 
 

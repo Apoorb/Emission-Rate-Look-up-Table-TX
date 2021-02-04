@@ -66,6 +66,7 @@ if __name__ == "__main__":
     # TODO: Remove the Where Area = "El Paso" filter after running all runs.
     # raise ValueError("erlt_df_2014b_py should eventually contain all districts")
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
+    cur = conn.cursor()
     DISTRICTS_ALL = (
         "El Paso",
         "Austin",
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         "Waco",
         "San Antonio",
     )
-    DISTRICTS_PRCSD = DISTRICTS_ALL[0:6]
+    DISTRICTS_PRCSD = DISTRICTS_ALL
     if len(DISTRICTS_PRCSD) == 1:
         DISTRICTS_PRCSD_TP = list(DISTRICTS_PRCSD)
         DISTRICTS_PRCSD_TP.append("HACK_FOR_WHERE_SQL")
@@ -106,7 +107,7 @@ if __name__ == "__main__":
             "interpol_vals": list(np.arange(2020, 2051, 1)),
             "grpby_cols": ["Area", "monthid", "funclass", "avgspeed"],
         },
-    )
+    ).reset_index(drop=True)
     # Output to database data with linearly interpolated values for interpol_vals: year
     # 2020 to 2050
     engine = get_engine_to_output_to_db(out_database="mvs2014b_erlt_out")
@@ -115,6 +116,7 @@ if __name__ == "__main__":
         con=engine,
         if_exists="replace",
         index=False,
+        chunksize=10000
     )
     # Get pivot table of the data with linearly interpolated values for interpol_vals:
     # year 2020 to 2050.
@@ -161,6 +163,7 @@ if __name__ == "__main__":
         con=engine,
         if_exists="replace",
         index=False,
+        chunksize=10000
     )
     qaqc_data_yr_iterpolated_spd_interpolated = pivot_df_reindex_for_qaqc(
         data=erlt_df_2014b_py_yr_iterpolated_spd_interpolated,
