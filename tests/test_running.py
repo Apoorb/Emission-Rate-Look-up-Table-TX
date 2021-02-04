@@ -38,7 +38,7 @@ DISTRICTS_ALL = [
     "Waco",
     "San Antonio",
 ]
-DISTRICTS_PRCSD = ["El Paso"]
+DISTRICTS_PRCSD = DISTRICTS_ALL
 RUNNING_OUTPUT_DATASETS = [
     "running_erlt_intermediate",
     "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
