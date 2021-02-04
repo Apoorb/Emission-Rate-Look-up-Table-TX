@@ -276,12 +276,14 @@ def test_unique_vehicletypes_fueltypes(get_erlt_starts_2014b_data_py):
 def test_unique_values_percent_unique_pollutants(
     get_erlt_starts_2014b_data_py, quantile_unique
 ):
+    # Only check pollutants that show variation.
+    pollutants_that_have_unique_emissions = ["SO2", "CO2EQ", "VOC",'BENZ', 'NAPTH', 'BUTA', 'FORM', 'ACTE', 'ACROL', 'ETYB', 'POM']
     num_unique_emmision_rates_pollutants = (
-        get_erlt_starts_2014b_data_py[POLLUTANT_COLS].nunique().values
+        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions].nunique().values
     )
     # Ignore the duplicate 0s.
     expected_unique_rates_pollutants = (
-        get_erlt_starts_2014b_data_py[POLLUTANT_COLS].gt(0).sum().values
+        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions].gt(0).sum().values
     )
     no_na_values = not any(np.ravel(get_erlt_starts_2014b_data_py.isna().values))
     no_empty_datasets = (len(get_erlt_starts_2014b_data_py)) > 0
