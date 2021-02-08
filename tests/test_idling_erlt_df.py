@@ -325,16 +325,20 @@ def test_correct_num_val_in_final_df(get_erlt_idling_2014b_data_py):
 @pytest.mark.parametrize(
     "get_erlt_idling_2014b_data_py, quantile_unique",
     [
-        ({"data": "idling_erlt_intermediate_yr_interpolated_no_monthid",
-          "fil_county": DISTRICTS_ALL}, 0.9)
+        (
+            {
+                "data": "idling_erlt_intermediate_yr_interpolated_no_monthid",
+                "fil_county": DISTRICTS_ALL,
+            },
+            0.9,
+        )
     ],
-    ids=[
-        "--".join(["idling final data", "all districts"])
-    ],
+    ids=["--".join(["idling final data", "all districts"])],
     indirect=["get_erlt_idling_2014b_data_py"],
 )
 def test_final_data_all_districts_some_pollutants_unique(
-        get_erlt_idling_2014b_data_py, quantile_unique):
+    get_erlt_idling_2014b_data_py, quantile_unique
+):
     # PM2.5, PM 10, DPM only have 170, 170 64 unqiue values in
     # idling_erlt_intermediatee but other pollutants seem
     # to have unique emission rates implying that the processing was okay.

@@ -386,12 +386,15 @@ def test_correct_num_val_in_final_df(get_erlt_running_2014b_data_py):
 @pytest.mark.parametrize(
     "get_erlt_running_2014b_data_py, quantile_unique",
     [
-        ({"data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
-          "fil_county": DISTRICTS_ALL}, .95)
+        (
+            {
+                "data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
+                "fil_county": DISTRICTS_ALL,
+            },
+            0.95,
+        )
     ],
-    ids=[
-        "--".join(["running final data", "all districts"])
-    ],
+    ids=["--".join(["running final data", "all districts"])],
     indirect=["get_erlt_running_2014b_data_py"],
 )
 def test_final_data_all_districts_unique_values_percent_unique_pollutants(

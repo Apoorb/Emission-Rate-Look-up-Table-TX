@@ -314,15 +314,19 @@ def test_correct_num_val_in_final_df(get_erlt_extnidle_2014b_data_py):
         == (2050 - 2020 + 1) * 2
     )
 
+
 @pytest.mark.parametrize(
     "get_erlt_extnidle_2014b_data_py, quantile_unique",
     [
-        ({"data": "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
-          "fil_county": DISTRICTS_ALL}, 1)
+        (
+            {
+                "data": "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
+                "fil_county": DISTRICTS_ALL,
+            },
+            1,
+        )
     ],
-    ids=[
-        "--".join(["extended idling final data", "all districts"])
-    ],
+    ids=["--".join(["extended idling final data", "all districts"])],
     indirect=["get_erlt_extnidle_2014b_data_py"],
 )
 def test_final_data_all_districts_unique_values_percent_unique_pollutants(

@@ -351,16 +351,18 @@ def test_correct_num_val_in_final_df(get_erlt_starts_2014b_data_py):
     )  # Number of unique fuel and vehicle type combo
 
 
-
 @pytest.mark.parametrize(
     "get_erlt_starts_2014b_data_py, quantile_unique",
     [
-        ({"data": "starts_erlt_intermediate_yr_interpolated_no_monthid",
-          "fil_county": DISTRICTS_ALL}, 0.95)
+        (
+            {
+                "data": "starts_erlt_intermediate_yr_interpolated_no_monthid",
+                "fil_county": DISTRICTS_ALL,
+            },
+            0.95,
+        )
     ],
-    ids=[
-        "--".join(["starts final data", "all districts"])
-    ],
+    ids=["--".join(["starts final data", "all districts"])],
     indirect=["get_erlt_starts_2014b_data_py"],
 )
 def test_final_data_all_districts_unique_values_percent_unique_pollutants(
