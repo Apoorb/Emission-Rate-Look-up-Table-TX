@@ -349,3 +349,54 @@ def test_correct_num_val_in_final_df(get_erlt_starts_2014b_data_py):
         ).ngroups
         == (2050 - 2020 + 1) * 22
     )  # Number of unique fuel and vehicle type combo
+
+
+
+@pytest.mark.parametrize(
+    "get_erlt_starts_2014b_data_py, quantile_unique",
+    [
+        ({"data": "starts_erlt_intermediate_yr_interpolated_no_monthid",
+          "fil_county": DISTRICTS_ALL}, 0.95)
+    ],
+    ids=[
+        "--".join(["starts final data", "all districts"])
+    ],
+    indirect=["get_erlt_starts_2014b_data_py"],
+)
+def test_final_data_all_districts_unique_values_percent_unique_pollutants(
+    get_erlt_starts_2014b_data_py, quantile_unique
+):
+    # Only check pollutants that show variation.
+    pollutants_that_have_unique_emissions = [
+        "SO2",
+        "CO2EQ",
+        "VOC",
+        "BENZ",
+        "NAPTH",
+        "BUTA",
+        "FORM",
+        "ACTE",
+        "ACROL",
+        "ETYB",
+        "POM",
+    ]
+    num_unique_emmision_rates_pollutants = (
+        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions]
+        .nunique()
+        .values
+    )
+    # Ignore the duplicate 0s.
+    expected_unique_rates_pollutants = (
+        get_erlt_starts_2014b_data_py[pollutants_that_have_unique_emissions]
+        .gt(0)
+        .sum()
+        .values
+    )
+    no_na_values = not any(np.ravel(get_erlt_starts_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_starts_2014b_data_py)) > 0
+    assert no_empty_datasets
+    assert no_na_values
+    assert all(
+        num_unique_emmision_rates_pollutants
+        >= (expected_unique_rates_pollutants * quantile_unique)
+    )

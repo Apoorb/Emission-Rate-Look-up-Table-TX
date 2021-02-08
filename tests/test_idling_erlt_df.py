@@ -320,3 +320,37 @@ def test_correct_num_val_in_final_df(get_erlt_idling_2014b_data_py):
     assert get_erlt_idling_2014b_data_py.groupby(["Area", "yearid"]).ngroups == (
         2050 - 2020 + 1
     )
+
+
+@pytest.mark.parametrize(
+    "get_erlt_idling_2014b_data_py, quantile_unique",
+    [
+        ({"data": "idling_erlt_intermediate_yr_interpolated_no_monthid",
+          "fil_county": DISTRICTS_ALL}, 0.9)
+    ],
+    ids=[
+        "--".join(["idling final data", "all districts"])
+    ],
+    indirect=["get_erlt_idling_2014b_data_py"],
+)
+def test_final_data_all_districts_some_pollutants_unique(
+        get_erlt_idling_2014b_data_py, quantile_unique):
+    # PM2.5, PM 10, DPM only have 170, 170 64 unqiue values in
+    # idling_erlt_intermediatee but other pollutants seem
+    # to have unique emission rates implying that the processing was okay.
+    # Only check pollutants that are likely to have unique emission rates.
+    num_unique_emmision_rates_pollutants = (
+        get_erlt_idling_2014b_data_py[
+            [col for col in ["NOX", "NO2", "VOC", "BENZ", "NAPTH", "POM"]]
+        ]
+        .nunique()
+        .values
+    )
+    no_na_values = not any(np.ravel(get_erlt_idling_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_idling_2014b_data_py)) > 0
+    assert no_empty_datasets
+    assert no_na_values
+    assert all(
+        num_unique_emmision_rates_pollutants
+        >= len(get_erlt_idling_2014b_data_py) * quantile_unique
+    )

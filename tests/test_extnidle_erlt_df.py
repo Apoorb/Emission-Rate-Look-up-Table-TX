@@ -313,3 +313,35 @@ def test_correct_num_val_in_final_df(get_erlt_extnidle_2014b_data_py):
         ).ngroups
         == (2050 - 2020 + 1) * 2
     )
+
+@pytest.mark.parametrize(
+    "get_erlt_extnidle_2014b_data_py, quantile_unique",
+    [
+        ({"data": "extnidle_erlt_intermediate_yr_interpolated_no_monthid",
+          "fil_county": DISTRICTS_ALL}, 1)
+    ],
+    ids=[
+        "--".join(["extended idling final data", "all districts"])
+    ],
+    indirect=["get_erlt_extnidle_2014b_data_py"],
+)
+def test_final_data_all_districts_unique_values_percent_unique_pollutants(
+    get_erlt_extnidle_2014b_data_py, quantile_unique
+):
+    # Only checking for POM pollutant as it seems to be the only pollutant with
+    # unique values across different catgories.
+    num_unique_emmision_rates_pollutants = get_erlt_extnidle_2014b_data_py.loc[
+        lambda df: df.Processtype == "Extnd_Exhaust", "POM"
+    ].nunique()
+    expected_unique_vals = len(
+        get_erlt_extnidle_2014b_data_py.loc[
+            lambda df: df.Processtype == "Extnd_Exhaust", "POM"
+        ]
+    )
+    no_na_values = not any(np.ravel(get_erlt_extnidle_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_extnidle_2014b_data_py)) > 0
+    assert no_empty_datasets
+    assert no_na_values
+    assert num_unique_emmision_rates_pollutants >= (
+        expected_unique_vals * quantile_unique
+    )
