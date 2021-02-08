@@ -138,6 +138,34 @@ def get_py_sql_df_list(
             {"data": "running_erlt_intermediate", "fil_county": ["Austin"]},
             {"grp_key": ("Austin", 2020, 1)},
         ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["Beaumont"]},
+            {"grp_key": ("Beaumont", 2036, 1)},
+        ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["Corpus Christi"]},
+            {"grp_key": ("Corpus Christi", 2040, 4)},
+        ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["Dallas"]},
+            {"grp_key": ("Dallas", 2032, 7)},
+        ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["Fort Worth"]},
+            {"grp_key": ("Fort Worth", 2034, 10)},
+        ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["Houston"]},
+            {"grp_key": ("Houston", 2046, 7)},
+        ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["San Antonio"]},
+            {"grp_key": ("San Antonio", 2046, 10)},
+        ),
+        (
+            {"data": "running_erlt_intermediate", "fil_county": ["Waco"]},
+            {"grp_key": ("Waco", 2028, 1)},
+        ),
     ],
     ids=[
         "_".join(map(str, ("El Paso", 2020, 1))),
@@ -145,6 +173,13 @@ def get_py_sql_df_list(
         "_".join(map(str, ("El Paso", 2024, 10))),
         "_".join(map(str, ("El Paso", 2044, 4))),
         "_".join(map(str, ("Austin", 2020, 1))),
+        "_".join(map(str, ("Beaumont", 2036, 1))),
+        "_".join(map(str, ("Corpus Christi", 2040, 4))),
+        "_".join(map(str, ("Dallas", 2032, 7))),
+        "_".join(map(str, ("Fort Worth", 2034, 10))),
+        "_".join(map(str, ("Houston", 2046, 7))),
+        "_".join(map(str, ("San Antonio", 2046, 10))),
+        "_".join(map(str, ("Waco", 2028, 1))),
     ],
     indirect=True,
 )
@@ -346,3 +381,30 @@ def test_correct_num_val_in_final_df(get_erlt_running_2014b_data_py):
     assert get_erlt_running_2014b_data_py.groupby(
         ["Area", "yearid", "funclass", "avgspeed"]
     ).ngroups == (2050 - 2020 + 1) * 4 * len(set([2.5] + list(range(3, 76, 1))))
+
+
+@pytest.mark.parametrize(
+    "get_erlt_running_2014b_data_py, quantile_unique",
+    [
+        ({"data": "running_erlt_intermediate_yr_spd_interpolated_no_monthid",
+          "fil_county": DISTRICTS_ALL}, .95)
+    ],
+    ids=[
+        "--".join(["running final data", "all districts"])
+    ],
+    indirect=["get_erlt_running_2014b_data_py"],
+)
+def test_final_data_all_districts_unique_values_percent_unique_pollutants(
+    get_erlt_running_2014b_data_py, quantile_unique
+):
+    num_unique_emmision_rates_pollutants = (
+        get_erlt_running_2014b_data_py[POLLUTANT_COLS].nunique().values
+    )
+    no_na_values = not any(np.ravel(get_erlt_running_2014b_data_py.isna().values))
+    no_empty_datasets = (len(get_erlt_running_2014b_data_py)) > 0
+    assert no_empty_datasets
+    assert no_na_values
+    assert all(
+        num_unique_emmision_rates_pollutants
+        >= len(get_erlt_running_2014b_data_py) * quantile_unique
+    )

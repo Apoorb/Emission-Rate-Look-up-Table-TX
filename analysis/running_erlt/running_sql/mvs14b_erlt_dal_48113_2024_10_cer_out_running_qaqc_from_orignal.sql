@@ -9,7 +9,7 @@ SET SQL_SAFE_UPDATES = 0;
 -- assigning Area is emisrate table.
 SET @analysis_district = "Austin";
 -- Set districts with TxLED program.
-SET @txled_prog_disticts = "Austin,Corpus Christi,Beaumont,Dallas,Fort Worth,Houston,Waco,San Antonio"; -- Remove El Paso from here---Check with Madhu---It likely doesn't have TxLED.
+SET @txled_prog_disticts = "Austin,District X"; -- Remove El Paso from here---Check with Madhu---It likely doesn't have TxLED.
 SELECT FIND_IN_SET(@analysis_district, @txled_prog_disticts);
 SELECT FIND_IN_SET("El Pafso", @txled_prog_disticts);
 flush tables;
