@@ -76,12 +76,23 @@ A sample workflow consists of the following steps:
    in data/raw/ERLT-TxLED Factor Summary.xlsx. 
 2. running_erlt/00_setting_up_schemas.py: Create mvs2014b_erlt_out, 
    mvs2014b_erlt_qaqc, and mvs2014b_erlt_conflicted schemas for storing outputs
-3. running_erlt/01_batch_run_running.py: Batch run the `ttierlt.running.running_batch_sql`module on different MOVES output databases. 
+3. running_erlt/01_batch_run_running.py: Batch run the `ttierlt.running.
+   running_batch_sql`module on different MOVES output databases. This script outputs 
+   running_erlt_intermediate table. 
 4. running_erlt/02_interpolate_emission_rate_between_yr_spd_agg_month.py: 
-   Interpolate emission rates for intermediate years and speeds.
+   Interpolate emission rates for intermediate years and speeds. This script outputs 
+   running_erlt_intermediate_yr_interpolated 
+   and running_erlt_intermediate_yr_spd_interpolated_no_monthid table.
 5. running_erlt/running_sql: Create running composite emission rate tables for 
-   individual MOVES output database. These tables are used for testing.
-6. tests/test_running_erlt_df: Run tests on running composite emission rate tables.
+   individual MOVES output database. These tables are saved in mvs2014b_erlt_qaqc 
+   and are used for testing. An example of QAWC output table would be 
+   mvs14b_erlt_aus_48453_2020_1_cer_out_running_qaqc_from_orignal; this is the QAQC 
+   output for Austin, 2020, January. 
+6. tests/test_running_erlt_df: Run tests on running composite emission rate tables. 
+   One of the tests in this module compares the output from step 4 with step 5. 
+   Majority of the tests are checking if all the expected groups are present in the 
+   final tables and the values within these groups and across these groups varies 
+   indicating that we did not use the same input for multiple scenarios by mistake.
 
 ## 3. Caveats
 **to_sql** will sometimes throw operational error when the ouptut database is large 
