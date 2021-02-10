@@ -15,6 +15,7 @@ def get_project_root() -> Path:
 PATH_TO_MARIA_DB_DATA = "C:/ProgramData/MariaDB/MariaDB 10.4/data"
 PATH_TO_PROJECT_ROOT = get_project_root()
 PATH_INTERIM = os.path.join(PATH_TO_PROJECT_ROOT, "data", "interim")
+PATH_PROCESSED = os.path.join(PATH_TO_PROJECT_ROOT, "data", "processed")
 PATH_RAW = os.path.join(PATH_TO_PROJECT_ROOT, "data", "raw")
 PATH_INTERIM_RUNNING = os.path.join(PATH_INTERIM, "running")
 if not os.path.exists(PATH_INTERIM_RUNNING):
