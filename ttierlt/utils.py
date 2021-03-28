@@ -30,6 +30,19 @@ PATH_INTERIM_EXTNIDLE = os.path.join(PATH_INTERIM, "extnidle")
 if not os.path.exists(PATH_INTERIM_EXTNIDLE):
     os.mkdir(PATH_INTERIM_EXTNIDLE)
 
+PATH_PROCESSED_RUNNING = os.path.join(PATH_PROCESSED, "running")
+if not os.path.exists(PATH_PROCESSED_RUNNING):
+    os.mkdir(PATH_PROCESSED_RUNNING)
+PATH_PROCESSED_STARTS = os.path.join(PATH_PROCESSED, "starts")
+if not os.path.exists(PATH_PROCESSED_STARTS):
+    os.mkdir(PATH_PROCESSED_STARTS)
+PATH_PROCESSED_IDLING = os.path.join(PATH_PROCESSED, "idling")
+if not os.path.exists(PATH_PROCESSED_IDLING):
+    os.mkdir(PATH_PROCESSED_IDLING)
+PATH_PROCESSED_EXTNIDLE = os.path.join(PATH_PROCESSED, "extnidle")
+if not os.path.exists(PATH_PROCESSED_EXTNIDLE):
+    os.mkdir(PATH_PROCESSED_EXTNIDLE)
+
 TEMPLATE_DB_NM = "mvs14b_erlt_elp_48141_2020_1_cer_out"  # Database used for developing the 1st set of SQL queries. It's
 # name would be replaced by other database name as we iterate over the different databases.
 
