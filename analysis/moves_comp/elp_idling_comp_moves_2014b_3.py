@@ -216,7 +216,7 @@ if __name__ == "__main__":
         conn = connect_to_server_db(database_nm=mvs3_df_[key_]["db"])
         idling_mvs3 = pd.read_sql(
             f"""SELECT * FROM rateperdistance 
-            WHERE hourid = 9 AND pollutantID IN (2, 3, 87, 100, 110)
+            WHERE hourid = 8 AND pollutantID IN (2, 3, 87, 100, 110)
             AND sourceTypeID in (21, 62)
             AND avgSpeedBinID = 0
             """,
