@@ -33,56 +33,82 @@ vmtmix_tod = pd.read_sql(
 )
 
 moves_rdtypeid_map = {
-    1:'Off-Network',
-    2:'Rural Restricted Access',
-    3:'Rural Unrestricted Access',
-    4:'Urban Restricted Access',
-    5:'Urban Unrestricted Access',
+    1: "Off-Network",
+    2: "Rural Restricted Access",
+    3: "Rural Unrestricted Access",
+    4: "Urban Restricted Access",
+    5: "Urban Unrestricted Access",
 }
 
 vmtmix_tod_fil = (
-    vmtmix_tod
-    .loc[lambda df: (df.YearID.isin(range(2020, 2055, 5))) &
-                    (df.Daytype=="Weekday")]
+    vmtmix_tod.loc[
+        lambda df: (df.YearID.isin(range(2020, 2055, 5))) & (df.Daytype == "Weekday")
+    ]
     .assign(
         Period=lambda df: pd.Categorical(
-            values=df.Period,
-            categories=["AM", "MD", "PM", "ON"],
-            ordered=True),
+            values=df.Period, categories=["AM", "MD", "PM", "ON"], ordered=True
+        ),
         VMX_RDcode=lambda df: df.VMX_RDcode.astype(int),
-        road_desc=lambda df: df.VMX_RDcode.map(moves_rdtypeid_map)
+        road_desc=lambda df: df.VMX_RDcode.map(moves_rdtypeid_map),
     )
-    .sort_values(by=["TxDOT_Dist", "YearID","Period","VMX_RDdesc",
-                     "MOVES_STcode", "MOVES_FTcode"])
-    .rename(columns={
-        "TxDOT_Dist": "District",
-        "YearID": "Year",
-        "road_desc": "Roadway Type",
-        "MOVES_STdesc": "SUT",
-        "MOVES_FTdesc":"Fuel Type",
-        "VMTmix":"VMT Factor",
-    })
-    .filter(items=["District", "Year", "Period", "Roadway Type", "SUT",
-                   "Fuel Type",
-                   "VMT Factor"])
+    .sort_values(
+        by=[
+            "TxDOT_Dist",
+            "YearID",
+            "Period",
+            "VMX_RDdesc",
+            "MOVES_STcode",
+            "MOVES_FTcode",
+        ]
+    )
+    .rename(
+        columns={
+            "TxDOT_Dist": "District",
+            "YearID": "Year",
+            "road_desc": "Roadway Type",
+            "MOVES_STdesc": "SUT",
+            "MOVES_FTdesc": "Fuel Type",
+            "VMTmix": "VMT Factor",
+        }
+    )
+    .filter(
+        items=[
+            "District",
+            "Year",
+            "Period",
+            "Roadway Type",
+            "SUT",
+            "Fuel Type",
+            "VMT Factor",
+        ]
+    )
 )
 
 
 vmtmix_tod_sum = (
-    vmtmix_tod_fil
-    .assign(Period=lambda df: df.Period.astype(str))
+    vmtmix_tod_fil.assign(Period=lambda df: df.Period.astype(str))
     .groupby(
-        ["District", "Year", "Period", "Roadway Type", "SUT", "Fuel Type",])
-    .agg(count1=("VMT Factor", "count")).reset_index())
+        [
+            "District",
+            "Year",
+            "Period",
+            "Roadway Type",
+            "SUT",
+            "Fuel Type",
+        ]
+    )
+    .agg(count1=("VMT Factor", "count"))
+    .reset_index()
+)
 
 
 assert vmtmix_tod_sum.count1.max() == 1
 assert vmtmix_tod_sum.count1.min() == 1
 
 writer = pd.ExcelWriter(out_path, engine="xlsxwriter")
-vmtmix_tod_fil.to_excel(writer, startcol=0, startrow=3, sheet_name="Sheet1",
-                        index=False)
-worksheet = writer.sheets['Sheet1']
-worksheet.write_string(0, 0, 'Appendix H: Time of Day VMT Mixes')
+vmtmix_tod_fil.to_excel(
+    writer, startcol=0, startrow=3, sheet_name="Sheet1", index=False
+)
+worksheet = writer.sheets["Sheet1"]
+worksheet.write_string(0, 0, "Appendix H: Time of Day VMT Mixes")
 writer.save()
-

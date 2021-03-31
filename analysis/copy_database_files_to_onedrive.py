@@ -15,17 +15,13 @@ from ttierlt.utils import connect_to_server_db
 if __name__ == "__main__":
     mariadb_data_dir = r"C:\ProgramData\MariaDB\MariaDB 10.4\data"
 
-    path_to_out_dir = (
-        r"C:\Users\a-bibeka\Documents"
-    )
+    path_to_out_dir = r"C:\Users\a-bibeka\Documents"
     district_abbs = ["elp", "aus", "bmt", "crp", "dal", "ftw", "hou", "wac", "sat"]
-
 
     county_files_pat = MovesDb.county_level_db.pattern
     # 'mvs14b_erlt_\\S{3}_\\d{5}_20\\d{2}_\\d{1,2}_cer_out'
     project_files_pat = MovesDb.project_level_db.pattern
     # 'mvs14b_erlt_\\S{3}_\\d{5}_20\\d{2}_per_out'
-
 
     for district_abb in district_abbs:
         spec_county_files_regex = re.compile(
@@ -46,7 +42,6 @@ if __name__ == "__main__":
         for db_path in list_of_county_db:
             db_path
             shutil.move(db_path, path_to_out_county_files)
-
 
     for district_abb in district_abbs:
         spec_county_files_regex = re.compile(
