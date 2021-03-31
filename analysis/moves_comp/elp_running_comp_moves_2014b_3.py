@@ -227,6 +227,7 @@ if __name__ == "__main__":
                 "year_id",
                 "month",
                 "day",
+                "hour_id",
                 "road_type_id",
                 "road_desc",
                 "source_type_id",
@@ -249,6 +250,7 @@ if __name__ == "__main__":
             "year_id",
             "month",
             "day",
+            "hour_id",
             "road_type_id",
             "road_desc",
             "source_type_id",
@@ -281,24 +283,29 @@ if __name__ == "__main__":
         .drop("rate_per_distance", axis=1)
         .droplevel(1, axis=1)
     )
-    final_df_agg_1 = final_df_agg.merge(
-        temp_per_diff,
-        on=[
-            "year_id",
-            "month",
-            "day",
-            "road_type_id",
-            "road_desc",
-            "source_type_id",
-            "source_type_name",
-            "fuel_type_id",
-            "fuel_type_desc",
-            "pollutant_id",
-            "pollutant_short_name",
-            "avg_speed_bin_id",
-            "avg_bin_speed",
-            "avg_speed_bin_desc",
-        ],
+    final_df_agg_1 = (
+        final_df_agg
+        .merge(
+            temp_per_diff,
+            on=[
+                "year_id",
+                "month",
+                "day",
+                "hour_id",
+                "road_type_id",
+                "road_desc",
+                "source_type_id",
+                "source_type_name",
+                "fuel_type_id",
+                "fuel_type_desc",
+                "pollutant_id",
+                "pollutant_short_name",
+                "avg_speed_bin_id",
+                "avg_bin_speed",
+                "avg_speed_bin_desc",
+            ],
+        )
+        .assign(District="El Paso")
     )
 
     final_df_agg_1.to_csv(out_path)

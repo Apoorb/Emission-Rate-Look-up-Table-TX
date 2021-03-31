@@ -9,7 +9,7 @@ from ttierlt.utils import PATH_RAW, PATH_PROCESSED
 
 path_plotting_df = os.path.join(PATH_PROCESSED, "erlt_2014_2014b.csv")
 path_plotting_df2 = (
-    r"C:\Users\a-bibeka\PycharmProjects\ERLT_Plot\data\erlt_2014_2014b.csv")
+    r"C:\Users\a-bibeka\PycharmProjects\ERLT_Plot\data\erlt_2014_2014b.parquet")
 erlt_df_2014b = pd.read_csv(PATH_PROCESSED + "/running_df_final.csv")
 
 erlt_df_2014b = (
@@ -171,4 +171,5 @@ erlt_df_2014_2014b_3 = (
 )
 
 erlt_df_2014_2014b_3.to_csv(path_plotting_df)
-erlt_df_2014_2014b_3.to_csv(path_plotting_df2)
+
+erlt_df_2014_2014b_3.to_parquet(path_plotting_df2)
