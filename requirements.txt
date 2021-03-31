@@ -21,3 +21,4 @@ dash
 pytest
 scipy
 xlsxwriter
+inflection
