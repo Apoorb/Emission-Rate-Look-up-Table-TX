@@ -16,9 +16,13 @@ from ttierlt.utils import connect_to_server_db, PATH_PROCESSED
 
 if __name__ == "__main__":
     out_dir = os.path.join(PATH_PROCESSED, "moves_2014b_3")
+    out_dir2 = (
+        r"C:\Users\a-bibeka\PycharmProjects\running_moves_2014b_vs_3_v1\data")
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
     out_path = os.path.join(out_dir, "running_mvs_2014b_3.csv")
+    out_path2 = os.path.join(out_dir2, "running_mvs_2014b_3.csv")
+
     conn = connect_to_server_db(database_nm="movesdb20210209")
     avgspeedbin = pd.read_sql("SELECT * FROM avgspeedbin", conn)
     emissionprocess = pd.read_sql("SELECT * FROM emissionprocess", conn)
@@ -299,3 +303,4 @@ if __name__ == "__main__":
     )
 
     final_df_agg_1.to_csv(out_path)
+    final_df_agg_1.to_csv(out_path2)
