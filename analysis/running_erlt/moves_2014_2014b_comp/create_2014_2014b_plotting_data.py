@@ -67,14 +67,6 @@ for new_district, old_district in new_old_district_map.items():
         .assign(
             area_old=lambda df: df.Area,
             Area=new_district,
-            funclass=lambda df: df.funclass.map(
-                {
-                    "Rural Restricted Access": "Rural-Freeway",
-                    "Rural Unrestricted Access": "Rural-Arterial",
-                    "Urban Restricted Access": "Urban-Freeway",
-                    "Urban Unrestricted Access": "Urban-Arterial",
-                }
-            ),
         )
         .drop(columns=["Road Type ID"])
         .rename(
