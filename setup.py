@@ -3,9 +3,9 @@ from setuptools import find_packages, setup
 setup(
     name="ttierlt",
     packages=find_packages(),
-    version="0.1.0",
+    version="0.1.1",
     description="Batch process MOVES output files to get condensed emission rate look-up tables by district, year, road type, speed, and pollutants.",
-    author="TTI-HMP",
+    author="Apoorba Bibeka, Madhusudhan Venugopal",
     license="MIT",
     install_requires=[
         "click",
