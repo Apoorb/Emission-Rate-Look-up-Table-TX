@@ -22,7 +22,7 @@ copyright = '2021, Apoorba Bibeka, Madhusudhan Venugopal'
 author = 'Apoorba Bibeka, Madhusudhan Venugopal'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+release = '0.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,6 +32,7 @@ release = '0.1'
 # ones.
 extensions = [
     'sphinx.ext.napoleon',
+    'sphinx.ext.autodoc'
 ]
 
 napoleon_google_docstring = False
@@ -46,15 +47,8 @@ sys.path.insert(0, os.path.join(os.getcwd(), "ttierlt"))
 # Sort members by type
 autodoc_member_order = 'groupwise'
 
-# Ensure that the __init__ method gets documented.
-# def skip(app, what, name, obj, skip, options):
-#     if name == "__init__":
-#         return False
-#     return skip
-#
-#
-# def setup(app):
-#     app.connect("autodoc-skip-member", skip)
+# Mock import
+#autodoc_mock_imports = ["setup"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -65,7 +59,7 @@ exclude_patterns = ['_build', '**tests**', '**spi**']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
