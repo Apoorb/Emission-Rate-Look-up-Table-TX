@@ -96,7 +96,8 @@ class RunningSqlCmds(MovesDb):
                 roadtypeid,pollutantid,sourcetypeid,fueltypeid,avgSpeedBinID,
                 SUM(rateperdistance) as ERate 
                 FROM rateperdistance
-                WHERE pollutantid in (2,3,31,33,87,98,100,110,20, 23, 185,24,25,26,27,
+                WHERE pollutantid in (30, 106, 107, 116, 117, 111, 90, 2,3,
+                31,33,87,98,100,110,20, 23, 185,24,25,26,27,
                 41,68, 69,70,71, 72, 73, 74, 75, 76, 77, 78, 81, 82, 83, 84, 168, 169, 
                 170, 171, 172, 173, 174, 175, 176, 177,178, 181, 182, 183, 184) 
                 and processid not in (18,19)

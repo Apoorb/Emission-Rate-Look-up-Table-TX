@@ -17,7 +17,15 @@ from ttierlt.yr_spd_interpol import (
     out_yr_spd_interpolated,
 )
 
+
 POLLUTANT_COLS = [
+    "NH3",
+    "PM10_Brakewear",
+    "PM10_Tirewear",
+    "PM25_Brakewear",
+    "PM25_Tirewear",
+    "Organic_Carbon",
+    "CO2",
     "CO",
     "NOX",
     "SO2",
