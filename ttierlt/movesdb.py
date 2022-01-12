@@ -221,3 +221,4 @@ class MovesDb:
 
     def close_conn(self):
         self.conn.close()
+
