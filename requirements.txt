@@ -13,7 +13,7 @@ pandas
 numpy
 mariadb
 sqlalchemy
-mysql-connector
+mysql-connector-python
 black
 openpyxl
 plotly
