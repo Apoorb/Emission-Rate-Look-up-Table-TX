@@ -4,7 +4,7 @@ Output VMT Mix by source type and fuel type.
 
 import pandas as pd
 import os
-from ttierlt.utils import connect_to_server_db
+from ttierlt_v1.utils import connect_to_server_db
 
 out_path = (
     r"C:\Users\a-bibeka\Texas A&M Transportation Institute"

@@ -10,8 +10,8 @@ import time
 import functools
 import operator
 import datetime
-from ttierlt.utils import PATH_INTERIM_RUNNING, get_db_nm_list, connect_to_server_db
-from ttierlt.running.running_batch_sql import RunningSqlCmds as erltRunning
+from ttierlt_v1.utils import PATH_INTERIM_RUNNING, get_db_nm_list, connect_to_server_db
+from ttierlt_v1.running.running_batch_sql import RunningSqlCmds as erltRunning
 
 RERUN_FROM_SCRATCH: bool = False
 # FixME: Add a the keyword: "running" at the top. Reuse it across the code. e.g

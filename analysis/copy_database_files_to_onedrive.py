@@ -8,9 +8,9 @@ import functools
 import operator
 import re
 import shutil
-from ttierlt.movesdb import MovesDb
+from ttierlt_v1.movesdb import MovesDb
 from pathlib import Path
-from ttierlt.utils import connect_to_server_db
+from ttierlt_v1.utils import connect_to_server_db
 
 if __name__ == "__main__":
     mariadb_data_dir = r"C:\ProgramData\MariaDB\MariaDB 10.4\data"

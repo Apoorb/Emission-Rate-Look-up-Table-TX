@@ -9,7 +9,7 @@ import pandas as pd
 import numpy as np
 import os
 import inflection
-from ttierlt.utils import connect_to_server_db, PATH_PROCESSED
+from ttierlt_v1.utils import connect_to_server_db, PATH_PROCESSED
 
 if __name__ == "__main__":
     out_dir = os.path.join(PATH_PROCESSED, "moves_2014b_3")
@@ -388,25 +388,21 @@ if __name__ == "__main__":
     temp_per_diff = (
         temp_per_diff.reset_index().drop("rate_per_hour", axis=1).droplevel(1, axis=1)
     )
-    final_df_agg_1 = (
-        final_df_agg
-        .merge(
-            temp_per_diff,
-            on=[
-                "year_id",
-                "month",
-                "day",
-                "hour_id",
-                "source_type_id",
-                "source_type_name",
-                "fuel_type_id",
-                "fuel_type_desc",
-                "pollutant_id",
-                "pollutant_short_name",
-            ],
-        )
-        .assign(District="El Paso")
-    )
+    final_df_agg_1 = final_df_agg.merge(
+        temp_per_diff,
+        on=[
+            "year_id",
+            "month",
+            "day",
+            "hour_id",
+            "source_type_id",
+            "source_type_name",
+            "fuel_type_id",
+            "fuel_type_desc",
+            "pollutant_id",
+            "pollutant_short_name",
+        ],
+    ).assign(District="El Paso")
 
     final_df_agg_1.to_csv(out_path)
     final_df_agg_1.to_csv(out_path2)

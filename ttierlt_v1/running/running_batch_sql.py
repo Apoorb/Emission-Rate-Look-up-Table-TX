@@ -8,8 +8,8 @@ import pandas as pd
 import mariadb
 import os
 import logging
-from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_RUNNING
-from ttierlt.movesdb import MovesDb
+from ttierlt_v1.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_RUNNING
+from ttierlt_v1.movesdb import MovesDb
 
 
 def create_running_table_in_db(delete_if_exists=False):
@@ -457,23 +457,23 @@ if __name__ == "__main__":
     logging.basicConfig(filename=path_log_file, filemode="w", level=logging.INFO)
     # ---
     db_nms_list = get_db_nm_list(district_abb="elp")
-    db_nm = "mvs14b_erlt_aus_48141_2022_7_cer_out"
+    db_nm = "mvs14b_erlt_aus_48453_2020_7_cer_out"
     logging.info(f"# Start processing {db_nm}")
-    elp_2022_7_obj = RunningSqlCmds(db_nm_=db_nm)
+    cnty_yr_mnth_obj = RunningSqlCmds(db_nm_=db_nm)
     query_start_time = time.time()
-    # elp_2022_7_obj.aggregate_emisrate_rateperdist()
-    hourmix_elp = elp_2022_7_obj.get_hourmix()
-    vmt_mix_elp_2022 = elp_2022_7_obj.get_vmtmix()
-    txled_elp_dict = elp_2022_7_obj.get_txled()
-    elp_2022_7_obj.create_indices_before_joins()
-    elp_2022_7_obj.join_emisrate_vmt_tod_txled()
-    elp_2022_7_obj.compute_factored_emisrate()
-    elp_2022_7_obj.agg_by_rdtype_funcls_avgspd(
+    cnty_yr_mnth_obj.aggregate_emisrate_rateperdist()
+    hourmix_elp = cnty_yr_mnth_obj.get_hourmix()
+    vmt_mix_cnty_yr = cnty_yr_mnth_obj.get_vmtmix()
+    txled_elp_dict = cnty_yr_mnth_obj.get_txled()
+    cnty_yr_mnth_obj.create_indices_before_joins()
+    cnty_yr_mnth_obj.join_emisrate_vmt_tod_txled()
+    cnty_yr_mnth_obj.compute_factored_emisrate()
+    cnty_yr_mnth_obj.agg_by_rdtype_funcls_avgspd(
         add_seperate_conflicted_copy=True, conflicted_copy_suffix="drop_after_testing"
     )
-    elp_2022_7_obj.close_conn()
+    cnty_yr_mnth_obj.close_conn()
     logging.info(
         "---Query execution time:  %s seconds ---" % (time.time() - query_start_time)
     )
     logging.info(f"# End processing {db_nm}")
-    del elp_2022_7_obj
+    del cnty_yr_mnth_obj

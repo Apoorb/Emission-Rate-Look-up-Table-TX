@@ -9,8 +9,8 @@ import mariadb
 import os
 import numpy as np
 import logging
-from ttierlt.movesdb import MovesDb
-from ttierlt.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_STARTS
+from ttierlt_v1.movesdb import MovesDb
+from ttierlt_v1.utils import connect_to_server_db, get_db_nm_list, PATH_INTERIM_STARTS
 
 
 def create_starts_table_in_db(delete_if_exists=False):

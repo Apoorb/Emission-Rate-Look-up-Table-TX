@@ -1,9 +1,9 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="ttierlt",
+    name="ttierlt_v1",
     packages=find_packages(),
-    version="0.2.1",
+    version="1.0.2",
     description="Batch process MOVES output files to get condensed emission rate look-up tables by district, year, road type, speed, and pollutants.",
     author="Apoorba Bibeka, Madhusudhan Venugopal",
     license="MIT",

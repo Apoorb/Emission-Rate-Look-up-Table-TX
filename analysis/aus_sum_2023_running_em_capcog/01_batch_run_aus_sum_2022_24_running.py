@@ -8,8 +8,8 @@ import time
 import mariadb
 import pandas as pd
 
-from ttierlt.utils import get_db_nm_list, connect_to_server_db
-from ttierlt.running.running_batch_sql import RunningSqlCmds as erltRunning
+from ttierlt_v1.utils import get_db_nm_list, connect_to_server_db
+from ttierlt_v1.running.running_batch_sql import RunningSqlCmds as erltRunning
 
 
 def create_aus_sum_2022_24_running_table_in_db():
@@ -21,8 +21,7 @@ def create_aus_sum_2022_24_running_table_in_db():
     conn = connect_to_server_db(database_nm=None)
     cur = conn.cursor()
     cur.execute("CREATE SCHEMA IF NOT EXISTS aus_sum_2022_24;")
-    cur.execute("DROP TABLE IF EXISTS "
-                "aus_sum_2022_24.aus_sum_2022_24_running_erlt")
+    cur.execute("DROP TABLE IF EXISTS " "aus_sum_2022_24.aus_sum_2022_24_running_erlt")
     cur.execute(
         """
         CREATE TABLE aus_sum_2022_24.aus_sum_2022_24_running_erlt (
@@ -127,10 +126,10 @@ def agg_by_rdtype_funcls_avgspd_no_hour(erlt_running_obj_):
 if __name__ == "__main__":
     create_aus_sum_2022_24_running_table_in_db()
     db_nms_list_temp = get_db_nm_list(district_abb="aus")
-    aus_sum_2022_2024_pat = re.compile(
-        "mvs14b_erlt_aus_48453_202[24]_7_cer_out")
+    aus_sum_2022_2024_pat = re.compile("mvs14b_erlt_aus_48453_202[24]_7_cer_out")
     db_aus_sum_2022_2024 = [
-        db for db in db_nms_list_temp if re.match(aus_sum_2022_2024_pat, db)]
+        db for db in db_nms_list_temp if re.match(aus_sum_2022_2024_pat, db)
+    ]
     db_nm = db_aus_sum_2022_2024[0]
     for db_nm in db_aus_sum_2022_2024:
         erlt_running_obj = erltRunning(db_nm_=db_nm)
@@ -142,20 +141,3 @@ if __name__ == "__main__":
         erlt_running_obj.join_emisrate_vmt_tod_txled()
         compute_factored_emisrate_by_hour(erlt_running_obj)
         agg_by_rdtype_funcls_avgspd_no_hour(erlt_running_obj)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

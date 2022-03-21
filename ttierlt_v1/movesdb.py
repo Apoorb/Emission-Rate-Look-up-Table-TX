@@ -3,7 +3,7 @@ Common MOVES output database attributes and function.
 """
 import re
 import pandas as pd
-from ttierlt.utils import connect_to_server_db
+from ttierlt_v1.utils import connect_to_server_db
 
 
 class MovesDb:
@@ -221,4 +221,3 @@ class MovesDb:
 
     def close_conn(self):
         self.conn.close()
-

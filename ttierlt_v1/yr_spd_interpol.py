@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 import pandas as pd
 import numpy as np
 import os
-from ttierlt.utils import (
+from ttierlt_v1.utils import (
     connect_to_server_db,
     get_engine_to_output_to_db,
     PATH_INTERIM_RUNNING,

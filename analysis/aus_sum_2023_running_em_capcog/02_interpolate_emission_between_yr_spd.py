@@ -8,12 +8,12 @@ Date Created: 05/23/2021
 import pandas as pd
 import numpy as np
 import os
-from ttierlt.utils import (
+from ttierlt_v1.utils import (
     connect_to_server_db,
     get_engine_to_output_to_db,
     PATH_PROCESSED,
 )
-from ttierlt.yr_spd_interpol import (
+from ttierlt_v1.yr_spd_interpol import (
     out_yr_spd_interpolated,
 )
 
@@ -48,13 +48,11 @@ AVG_SPEED_LIST = [2.5] + list(range(3, 76))
 
 if __name__ == "__main__":
     path_aus_sum_2023_running_out = os.path.join(
-        PATH_PROCESSED, "aus_sum_2023_running_erlt",
-        "aus_sum_2023_running_erlt.xlsx")
+        PATH_PROCESSED, "aus_sum_2023_running_erlt", "aus_sum_2023_running_erlt.xlsx"
+    )
     conn = connect_to_server_db(database_nm="aus_sum_2022_24")
     cur = conn.cursor()
-    DISTRICTS_ALL = (
-        "Austin",
-    )
+    DISTRICTS_ALL = ("Austin",)
     DISTRICTS_PRCSD = DISTRICTS_ALL
     if len(DISTRICTS_PRCSD) == 1:
         DISTRICTS_PRCSD_TP = list(DISTRICTS_PRCSD)
@@ -114,41 +112,49 @@ if __name__ == "__main__":
     )
 
     aus_sum_2023_running_erlt_yr_spd_interpolated = (
-        erlt_df_2014b_py_yr_iterpolated_spd_interpolated
-        .loc[lambda df: df.yearid == 2023]
+        erlt_df_2014b_py_yr_iterpolated_spd_interpolated.loc[
+            lambda df: df.yearid == 2023
+        ]
     )
 
     aus_sum_2023_running_erlt_yr_spd_interpolated.to_excel(
-        path_aus_sum_2023_running_out)
+        path_aus_sum_2023_running_out
+    )
 
-    #QAQC
+    # QAQC
     ############################################################################
     conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")
     erlt_aus = pd.read_sql(
         "SELECT * FROM running_erlt_intermediate_yr_interpolated "
-        "WHERE Area = 'Austin' AND yearid = 2023 AND monthid = 7", conn)
+        "WHERE Area = 'Austin' AND yearid = 2023 AND monthid = 7",
+        conn,
+    )
     conn.close()
-    erlt_aus_fil = (
-        erlt_aus
-        .filter(items=[
-            'Area', 'yearid', 'monthid', 'funclass', 'avgspeed', 'POM', 'NOX',
-            'CO2EQ', 'DPM'
-        ])
+    erlt_aus_fil = erlt_aus.filter(
+        items=[
+            "Area",
+            "yearid",
+            "monthid",
+            "funclass",
+            "avgspeed",
+            "POM",
+            "NOX",
+            "CO2EQ",
+            "DPM",
+        ]
     )
 
     conn = connect_to_server_db(database_nm="vmtmix_fy20")
-    hourmix_aux = pd.read_sql(
-        "SELECT * FROM hourmix WHERE District = 'Austin'", conn)
-    hourmix_aux_1 = (
-        hourmix_aux
-        .rename(columns={"TOD": "hourid", "Factor": "hourmix"})
-        .filter(items=["hourid", "hourmix"])
-    )
+    hourmix_aux = pd.read_sql("SELECT * FROM hourmix WHERE District = 'Austin'", conn)
+    hourmix_aux_1 = hourmix_aux.rename(
+        columns={"TOD": "hourid", "Factor": "hourmix"}
+    ).filter(items=["hourid", "hourmix"])
     conn.close()
 
     aus_sum_2023_running_erlt_yr_spd_interpolated_hour_agg = (
-        aus_sum_2023_running_erlt_yr_spd_interpolated
-        .loc[lambda df: df.avgspeed.isin(erlt_aus_fil.avgspeed.unique())]
+        aus_sum_2023_running_erlt_yr_spd_interpolated.loc[
+            lambda df: df.avgspeed.isin(erlt_aus_fil.avgspeed.unique())
+        ]
         .merge(
             hourmix_aux_1,
             on="hourid",
@@ -159,7 +165,7 @@ if __name__ == "__main__":
             CO2EQ=lambda df: df.CO2EQ * df.hourmix,
             DPM=lambda df: df.DPM * df.hourmix,
         )
-        .groupby(['Area', 'yearid', 'monthid', 'funclass', 'avgspeed'])
+        .groupby(["Area", "yearid", "monthid", "funclass", "avgspeed"])
         .agg(
             POM=("POM", "sum"),
             NOX=("NOX", "sum"),
@@ -170,6 +176,5 @@ if __name__ == "__main__":
     )
 
     pd.testing.assert_frame_equal(
-        erlt_aus_fil, aus_sum_2023_running_erlt_yr_spd_interpolated_hour_agg)
-
-
+        erlt_aus_fil, aus_sum_2023_running_erlt_yr_spd_interpolated_hour_agg
+    )

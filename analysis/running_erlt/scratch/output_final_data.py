@@ -4,7 +4,7 @@ Output final dataset set as csv.
 
 import pandas as pd
 import os
-from ttierlt.utils import connect_to_server_db, PATH_PROCESSED
+from ttierlt_v1.utils import connect_to_server_db, PATH_PROCESSED
 
 path_running_df_final = os.path.join(PATH_PROCESSED, "running_df_final.csv")
 conn = connect_to_server_db(database_nm="mvs2014b_erlt_out")

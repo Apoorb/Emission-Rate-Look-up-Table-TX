@@ -10,8 +10,8 @@ import time
 import datetime
 import functools
 import operator
-from ttierlt.utils import PATH_INTERIM_IDLING, get_db_nm_list, connect_to_server_db
-from ttierlt.idling.idling_batch_sql import IdlingSqlCmds as erltIdling
+from ttierlt_v1.utils import PATH_INTERIM_IDLING, get_db_nm_list, connect_to_server_db
+from ttierlt_v1.idling.idling_batch_sql import IdlingSqlCmds as erltIdling
 
 RERUN_FROM_SCRATCH: bool = False
 # FixME: Add a the keyword: "running" at the top. Reuse it across the code. e.g

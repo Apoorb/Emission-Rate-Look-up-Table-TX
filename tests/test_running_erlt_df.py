@@ -5,7 +5,7 @@ import pytest
 import re
 import pandas as pd
 import numpy as np
-from ttierlt.utils import connect_to_server_db
+from ttierlt_v1.utils import connect_to_server_db
 
 
 POLLUTANT_COLS = [

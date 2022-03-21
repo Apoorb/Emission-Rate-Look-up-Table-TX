@@ -11,8 +11,8 @@ import time
 import datetime
 import functools
 import operator
-from ttierlt.utils import PATH_INTERIM_STARTS, get_db_nm_list, connect_to_server_db
-from ttierlt.starts.starts_batch_sql import StartSqlCmds as erltStarts
+from ttierlt_v1.utils import PATH_INTERIM_STARTS, get_db_nm_list, connect_to_server_db
+from ttierlt_v1.starts.starts_batch_sql import StartSqlCmds as erltStarts
 
 RERUN_FROM_SCRATCH: bool = False
 

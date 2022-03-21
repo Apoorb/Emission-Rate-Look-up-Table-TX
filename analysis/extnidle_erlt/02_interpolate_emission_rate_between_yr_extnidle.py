@@ -9,12 +9,12 @@ Date Created: 01/27/2021
 import pandas as pd
 import numpy as np
 import os
-from ttierlt.utils import (
+from ttierlt_v1.utils import (
     connect_to_server_db,
     get_engine_to_output_to_db,
     PATH_INTERIM_EXTNIDLE,
 )
-from ttierlt.yr_spd_interpol import (
+from ttierlt_v1.yr_spd_interpol import (
     pivot_df_reindex_for_qaqc,
     out_yr_spd_interpolated,
     agg_rates_over_yr,

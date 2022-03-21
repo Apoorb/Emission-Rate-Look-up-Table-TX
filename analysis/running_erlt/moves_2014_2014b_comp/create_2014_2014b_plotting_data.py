@@ -5,11 +5,12 @@ Process 2014 ERLTs.
 import pandas as pd
 import numpy as np
 import os
-from ttierlt.utils import PATH_RAW, PATH_PROCESSED
+from ttierlt_v1.utils import PATH_RAW, PATH_PROCESSED
 
 path_plotting_df = os.path.join(PATH_PROCESSED, "erlt_2014_2014b.csv")
 path_plotting_df2 = (
-    r"C:\Users\a-bibeka\PycharmProjects\ERLT_Plot\data\erlt_2014_2014b.parquet")
+    r"C:\Users\a-bibeka\PycharmProjects\ERLT_Plot\data\erlt_2014_2014b.parquet"
+)
 erlt_df_2014b = pd.read_csv(PATH_PROCESSED + "/running_df_final.csv")
 
 erlt_df_2014b = (
@@ -154,8 +155,15 @@ erlt_df_2014_2014b_1 = erlt_df_2014_2014b.rename(
 )
 
 per_diff_df = erlt_df_2014_2014b_1[
-    ['Area', 'Year', 'Road Description', 'Average Speed (mph)', 'Pollutant',
-     'Percent Change in Current Study Emissions']]
+    [
+        "Area",
+        "Year",
+        "Road Description",
+        "Average Speed (mph)",
+        "Pollutant",
+        "Percent Change in Current Study Emissions",
+    ]
+]
 
 
 erlt_df_2014_2014b_2 = erlt_df_2014_2014b_1.melt(
@@ -165,10 +173,7 @@ erlt_df_2014_2014b_2 = erlt_df_2014_2014b_1.melt(
     value_name="Emission Rate (grams/mile)",
 )
 
-erlt_df_2014_2014b_3 = (
-    pd.merge(erlt_df_2014_2014b_2,
-             per_diff_df)
-)
+erlt_df_2014_2014b_3 = pd.merge(erlt_df_2014_2014b_2, per_diff_df)
 
 erlt_df_2014_2014b_3.to_csv(path_plotting_df)
 

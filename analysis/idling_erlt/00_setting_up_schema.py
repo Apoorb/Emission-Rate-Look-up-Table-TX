@@ -3,12 +3,12 @@ Create the Schemas in MaraDB needed to Output Intermediate data.
 Created by: Apoorba Bibeka
 Date Created: 01/30/2021
 """
-from ttierlt.utils import (
+from ttierlt_v1.utils import (
     connect_to_server_db,
     get_db_nm_list,
     create_qaqc_output_conflicted_schema,
 )
-from ttierlt.idling.idling_batch_sql import create_idling_table_in_db
+from ttierlt_v1.idling.idling_batch_sql import create_idling_table_in_db
 
 conn = connect_to_server_db(database_nm=None)
 cur = conn.cursor()

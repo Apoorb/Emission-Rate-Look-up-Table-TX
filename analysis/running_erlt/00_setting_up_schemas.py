@@ -3,13 +3,13 @@ Create the Schemas in MaraDB needed for saving  Output Intermediate data.
 Created by: Apoorba Bibeka
 Date Created: 01/25/2021
 """
-from ttierlt.utils import (
+from ttierlt_v1.utils import (
     connect_to_server_db,
     get_db_nm_list,
     create_qaqc_output_conflicted_schema,
 )
-from ttierlt.movesdb import MovesDb
-from ttierlt.running.running_batch_sql import create_running_table_in_db
+from ttierlt_v1.movesdb import MovesDb
+from ttierlt_v1.running.running_batch_sql import create_running_table_in_db
 
 conn = connect_to_server_db(database_nm=None)
 cur = conn.cursor()

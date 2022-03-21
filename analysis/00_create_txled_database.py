@@ -3,7 +3,7 @@ Create TxLED Database with a long table format for TxLED data.
 """
 import os
 import pandas as pd
-from ttierlt.utils import (
+from ttierlt_v1.utils import (
     PATH_RAW,
     PATH_INTERIM_RUNNING,
     connect_to_server_db,
